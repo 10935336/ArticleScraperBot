@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Function: Weibo designated authors crawl articles
+# Function: Sina Weibo designated authors crawl articles
 # Note: Use the mobile version page to obtain the uid,
 # such as https://weibo.com/sinapapers to https://m.weibo.cn/u/2028810631.
 # m.weibo.com has almost no authentication, but weibo.com is very strict.
 # Author: 10935336
 # Creation date: 2023-04-24
-# Modified date: 2023-05-05
+# Modified date: 2023-05-06
 
 import json
 import logging
@@ -16,7 +16,7 @@ import requests
 from bs4 import BeautifulSoup
 
 
-class WeiboSpider:
+class SinaWeiboSpider:
     def __init__(self):
         self.articles_json = ''
         self.authors_list = []
@@ -88,6 +88,6 @@ class WeiboSpider:
             logging.exception(f"Error getting or parsing the response: {error}")
             self.articles_json = []
 
-    def start(self, authors_list_path=r".\conf\weibo_authors_list.json"):
+    def start(self, authors_list_path=r".\conf\sinaweibo_authors_list.json"):
         self.load_authors(authors_list_path)
         self.get_articles_list()

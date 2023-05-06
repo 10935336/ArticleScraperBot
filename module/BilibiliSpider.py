@@ -3,7 +3,7 @@
 # Function: Bilibili designated authors crawl articles and videos
 # Author: 10935336
 # Creation date: 2023-04-23
-# Modified date: 2023-05-05
+# Modified date: 2023-05-06
 
 import json
 import logging
@@ -154,8 +154,12 @@ class BilibiliSpider:
             self.articles_json = []
 
     def combine_video_and_articles(self):
-        self.articles_json = json.dumps(json.loads(self.articles_json) + json.loads(self.videos_json),
+        try:
+            self.articles_json = json.dumps(json.loads(self.articles_json) + json.loads(self.videos_json),
                                         ensure_ascii=False)
+        except Exception as error:
+            logging.exception(f"Error in combine video and articles list: {error}")
+            self.articles_json = []
 
     def start(self, authors_list_path=r".\conf\bilibili_authors_list.json"):
         self.load_authors(authors_list_path)

@@ -16,19 +16,19 @@
     "object_name": "dy"
   },
   {
-    "spider_id": "NetEaseSelfMediaSpider",
+    "spider_id": "NetEaseNewsSelfMediaSpider",
     "object_name": "wy"
   },
   {
-    "spider_id": "SohuSelfMediaSpider",
+    "spider_id": "SohuNewsSelfMediaSpider",
     "object_name": "sh"
   },
   {
-    "spider_id": "TencentSelfMediaSpider",
+    "spider_id": "TencentNewsSelfMediaSpider",
     "object_name": "tx"
   },
   {
-    "spider_id": "WeiboSpider",
+    "spider_id": "SinaWeiboSpider",
     "object_name": "wb"
   }
 ]

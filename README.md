@@ -32,22 +32,22 @@ Currently supports pushing to:
 ## How to use
 
 - Clone or download this repository
-<br>
+
 - Install Python 3.11 or later, install Firefox, execute `pip install -r requirements.txt`
-<br>
+
 - Open the `conf` folder
-<br>
+
 - Find the author list of the website you want to crawl, the author list file is named in this way `<lowercase module name, remove spider>_authors_list` 
   For example, the author list of `BilibiliSpider.py` is `bilibili_authors_list.json`
-<br>
+
 - Fill in the author name and ID in the author list according to the sample format, the number is not limited
-<br>
+
 - Fill in `spider_list.json` This is the list of websites you want to crawl. 
   For example, if you want to crawl bilibili, fill in the module name of bilibili `BilibiliSpider` in `spider_id`, `object_name` can be filled in freely, but cannot be repeated
-<br>
+
 - Fill in the push key. 
   For example, DingTalk needs to fill in `webhook`, `secret` and `name` in `dingtalk_bot_key.json`.
-<br>
+
 - Depending on how often you want to get the latest articles, schedule `python3 -m main.py` with an external timer such as crontab or Windows Task Scheduler.
 
 
@@ -85,22 +85,22 @@ Currently supports pushing to:
 ## 使用方法
 
 - 克隆或下载此仓库
-<br>
+
 - 安装 Python 3.11 或更高版本，安装 Firefox，执行 `pip install -r requirements.txt`
-<br>
+
 - 打开 `conf` 文件夹
-<br>
+
 - 找到你想抓取的网站的作者列表 ，作者列表文件按此方式命名 `<小写模块名称，去掉spider>_authors_list` 
   例如 `BilibiliSpider.py` 的作者列表为 `bilibili_authors_list.json`
-<br>
+
 - 在作者列表中按示例格式填入作者名称和 ID，个数不限
-<br>
+
 - 填写 `spider_list.json` 这是你要爬取的网站列表。
   例如如果你想要爬取bilibili 就在`spider_id`中填写bilibili的模块名称`BilibiliSpider`，`object_name`可以随意填写，但不能重复
-<br>
+
 - 填写推送密钥。
   例如钉钉需要在 `dingtalk_bot_key.json` 中填入`webhook`和`secret`和`name`。
-<br>
+
 - 取决你你多久想获取一次最新文章，使用外部计时器定时执行 `python3 -m main.py` 例如 crontab 或 Window 任务计划程序
 
 ## 例子

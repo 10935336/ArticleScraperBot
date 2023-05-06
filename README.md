@@ -29,31 +29,33 @@ Currently supports pushing to:
 |  ----  | ----  | ----  | ----  |
 | DingTalk 钉钉  | DingTalk Robot | DingTalkRobot.py | [DingtalkChatbot](https://github.com/zhuifengshen/DingtalkChatbot) |
 
+<br>
 ## How to use
 
-- Clone or download this repository
-<br>
-- Install Python 3.11 or later, install Firefox, execute `pip install -r requirements.txt`
-<br>
-- Open the `conf` folder
-<br>
-- Find the author list of the website you want to crawl, the author list file is named in this way `<lowercase module name, remove spider>_authors_list` 
-  For example, the author list of `BilibiliSpider.py` is `bilibili_authors_list.json`
-<br>
-- Fill in the author name and ID in the author list according to the sample format, the number is not limited
-<br>
+- Clone or download this repository;
+
+- Install Python 3.11 or later, install Firefox, execute `pip install -r requirements.txt`;
+
+- Open the `conf` folder;
+
+- Find the author list of the website you want to crawl, the author list file is named in this way `<lowercase module name, remove spider>_authors_list.json` 
+  For example, the author list of `BilibiliSpider.py` is `bilibili_authors_list.json`;
+
+- Fill in the author name and ID in the author list according to the sample format, the number is not limited;
+
 - Fill in `spider_list.json` This is the list of websites you want to crawl. 
-  For example, if you want to crawl bilibili, fill in the module name of bilibili `BilibiliSpider` in `spider_id`, `object_name` can be filled in freely, but cannot be repeated
-<br>
+  For example, if you want to crawl bilibili, fill in the module name of bilibili `BilibiliSpider` in `spider_id`, `object_name` can be filled in freely, but cannot be repeated;
+
 - Fill in the push key. 
-  For example, DingTalk needs to fill in `webhook`, `secret` and `name` in `dingtalk_bot_key.json`.
+  For example, DingTalk needs to fill in `webhook`, `secret` and `name` in `dingtalk_bot_key.json`;
+
+- Depending on how often you want to get the latest articles, schedule `python3 -m main.py` with an external timer such as crontab or Windows Task Scheduler;
+
+
 <br>
-- Depending on how often you want to get the latest articles, schedule `python3 -m main.py` with an external timer such as crontab or Windows Task Scheduler.
-
-
-
-
-
+<br>
+<br>
+<br>
 # 简体中文
 
 ## 介绍
@@ -82,28 +84,69 @@ Currently supports pushing to:
 |  ----  | ----  | ----  | ----  |
 | DingTalk 钉钉  | DingTalk Robot | DingTalkRobot.py | [DingtalkChatbot](https://github.com/zhuifengshen/DingtalkChatbot) |
 
+<br>
 ## 使用方法
 
-- 克隆或下载此仓库
-<br>
-- 安装 Python 3.11 或更高版本，安装 Firefox，执行 `pip install -r requirements.txt`
-<br>
-- 打开 `conf` 文件夹
-<br>
-- 找到你想抓取的网站的作者列表 ，作者列表文件按此方式命名 `<小写模块名称，去掉spider>_authors_list` 
-  例如 `BilibiliSpider.py` 的作者列表为 `bilibili_authors_list.json`
-<br>
-- 在作者列表中按示例格式填入作者名称和 ID，个数不限
-<br>
-- 填写 `spider_list.json` 这是你要爬取的网站列表。
-  例如如果你想要爬取bilibili 就在`spider_id`中填写bilibili的模块名称`BilibiliSpider`，`object_name`可以随意填写，但不能重复
-<br>
-- 填写推送密钥。
-  例如钉钉需要在 `dingtalk_bot_key.json` 中填入`webhook`和`secret`和`name`。
-<br>
-- 取决你你多久想获取一次最新文章，使用外部计时器定时执行 `python3 -m main.py` 例如 crontab 或 Window 任务计划程序
+- 克隆或下载此仓库；
 
-## 例子
+- 安装 Python 3.11 或更高版本，安装 Firefox，执行 `pip install -r requirements.txt`；
+
+- 打开 `conf` 文件夹；
+
+- 找到你想抓取的网站的作者列表 ，作者列表文件按此方式命名 `<小写模块名称，去掉spider>_authors_list.json` 
+  例如 `BilibiliSpider.py` 的作者列表为 `bilibili_authors_list.json`；
+
+- 在作者列表中按示例格式填入作者名称和 ID，个数不限；
+
+- 填写 `spider_list.json` 这是你要爬取的网站列表。
+  例如如果你想要爬取bilibili 就在`spider_id`中填写bilibili的模块名称`BilibiliSpider`，`object_name`可以随意填写，但不能重复；
+
+- 填写推送密钥。
+  例如钉钉需要在 `dingtalk_bot_key.json` 中填入`webhook`和`secret`和`name`；
+
+- 取决你你多久想获取一次最新文章，使用外部计时器定时执行 `python3 -m main.py` 例如 crontab 或 Window 任务计划程序；
+
+<br>
+## 网站模块扩展方式
+
+在 `module` 文件夹内创建你的模块，在模块内创建和文件名同名的类。
+
+- 实现从 `conf/<小写模块名称，去掉spider>_authors_list.json` 读取作者 ID 和名字。
+
+- 实现执行 `self.start()` 后可以在 `self.articles_json` 内读取到
+以 `self.articles_json = json.dumps(foobar, ensure_ascii=False)` 储存的文章列表，所有字段均为 `str`，格式如下：
+
+```
+[
+    {
+        "title": "标题", 
+        "article_id": "文章ID", 
+        "author_id": "作者ID", 
+        "author_name": "作者名", 
+        "channel_name": "网站名", 
+        "link": "链接", 
+        "creation_time": "创建时间戳", 
+        "snapshot_time": "爬取时间戳"
+    }, 
+    {
+        "title": "标题", 
+        "article_id": "文章ID", 
+        "author_id": "作者ID", 
+        "author_name": "作者名", 
+        "channel_name": "网站名", 
+        "link": "链接", 
+        "creation_time": "创建时间戳", 
+        "snapshot_time": "爬取时间戳"
+    }
+]
+```
+
+<br>
+## 推送模块扩展方式
+还没写。
+
+<br>
+## 使用例子
 
 假如我想爬取哔哩哔哩用户“陈睿”和新浪微博用户“新浪科技”和“新浪新闻”的文章并推送到钉钉。
 

@@ -11,25 +11,27 @@ Modular design so you can add website or push by yourself.
 
 The following sites are currently supported: 
 
-|  Name   | Module  |
-|  ----  | ----  |
-| Baidu Baijiahao 百度百家号  | BaiduBaijiahaoSpider.py |
-| Baidu Tieba 百度贴吧  | BaiduTiebaSpider.py |
-| Bilibili 哔哩哔哩  | BilibiliSpider.py |
-| Douyin(not tiktok) 抖音  | DouyinSpider.py |
-| NetEase News SelfMedia 网易新闻网易号  | NetEaseNewsSelfMediaSpider.py |
-| Sohu News SelfMedia 搜狐新闻搜狐号  | SohuNewsSelfMediaSpider.py |
-| Tencent News SelfMedia 腾讯新闻企鹅号  | TencentNewsSelfMediaSpider.py |
-| Sina Weibo 新浪微博  | SinaWeiboSpider.py |
+| Name                                  | Module                        |
+| ------------------------------------- | ----------------------------- |
+| Baidu Baijiahao 百度百家号            | BaiduBaijiahaoSpider.py       |
+| Baidu Tieba 百度贴吧                  | BaiduTiebaSpider.py           |
+| Bilibili 哔哩哔哩                     | BilibiliSpider.py             |
+| Douyin(not tiktok) 抖音               | DouyinSpider.py               |
+| NetEase News SelfMedia 网易新闻网易号 | NetEaseNewsSelfMediaSpider.py |
+| Sohu News SelfMedia 搜狐新闻搜狐号    | SohuNewsSelfMediaSpider.py    |
+| Tencent News SelfMedia 腾讯新闻企鹅号 | TencentNewsSelfMediaSpider.py |
+| Sina Weibo 新浪微博                   | SinaWeiboSpider.py            |
 
 <br>
+
 Currently supports pushing to:
 
-|  Name   | Push method  | Module | Library |
-|  ----  | ----  | ----  | ----  |
-| DingTalk 钉钉  | DingTalk Robot | DingTalkRobot.py | [DingtalkChatbot](https://github.com/zhuifengshen/DingtalkChatbot) |
+| Name          | Push method    | Module           | Library                                                            |
+| ------------- | -------------- | ---------------- | ------------------------------------------------------------------ |
+| DingTalk 钉钉 | DingTalk Robot | DingTalkRobot.py | [DingtalkChatbot](https://github.com/zhuifengshen/DingtalkChatbot) |
 
 <br>
+
 ## How to use
 
 - Clone or download this repository;
@@ -56,6 +58,7 @@ Currently supports pushing to:
 <br>
 <br>
 <br>
+
 # 简体中文
 
 ## 介绍
@@ -65,26 +68,28 @@ Currently supports pushing to:
 
 目前支持以下站点:
 
-|  网站名称   | 模块  |
-|  ----  | ----  |
-| 百度百家号  | BaiduBaijiahaoSpider.py |
-| 百度贴吧  | BaiduTiebaSpider.py |
-| 哔哩哔哩  | BilibiliSpider.py |
-| 抖音  | DouyinSpider.py |
-| 网易新闻网易号  | NetEaseNewsSelfMediaSpider.py |
-| 搜狐新闻搜狐号  | SohuNewsSelfMediaSpider.py |
-| 腾讯新闻企鹅号  | TencentNewsSelfMediaSpider.py |
-| 新浪微博  | SinaWeiboSpider.py |
+| 网站名称       | 模块                          |
+| -------------- | ----------------------------- |
+| 百度百家号     | BaiduBaijiahaoSpider.py       |
+| 百度贴吧       | BaiduTiebaSpider.py           |
+| 哔哩哔哩       | BilibiliSpider.py             |
+| 抖音           | DouyinSpider.py               |
+| 网易新闻网易号 | NetEaseNewsSelfMediaSpider.py |
+| 搜狐新闻搜狐号 | SohuNewsSelfMediaSpider.py    |
+| 腾讯新闻企鹅号 | TencentNewsSelfMediaSpider.py |
+| 新浪微博       | SinaWeiboSpider.py            |
 
 
 <br>
+
 目前支持推送到:
 
-|  名称   | 推送方式  | 模块 | 库 |
-|  ----  | ----  | ----  | ----  |
-| DingTalk 钉钉  | DingTalk Robot | DingTalkRobot.py | [DingtalkChatbot](https://github.com/zhuifengshen/DingtalkChatbot) |
+| 名称          | 推送方式       | 模块             | 库                                                                 |
+| ------------- | -------------- | ---------------- | ------------------------------------------------------------------ |
+| DingTalk 钉钉 | DingTalk Robot | DingTalkRobot.py | [DingtalkChatbot](https://github.com/zhuifengshen/DingtalkChatbot) |
 
 <br>
+
 ## 使用方法
 
 - 克隆或下载此仓库；
@@ -107,6 +112,7 @@ Currently supports pushing to:
 - 取决你你多久想获取一次最新文章，使用外部计时器定时执行 `python3 -m main.py` 例如 crontab 或 Window 任务计划程序；
 
 <br>
+
 ## 网站模块扩展方式
 
 在 `module` 文件夹内创建你的模块，在模块内创建和文件名同名的类。
@@ -147,6 +153,7 @@ Currently supports pushing to:
 还没写。
 
 <br>
+
 ## 使用例子
 
 假如我想爬取哔哩哔哩用户“陈睿”和新浪微博用户“新浪科技”和“新浪新闻”的文章并推送到钉钉。
@@ -171,6 +178,7 @@ https://space.bilibili.com/208259?spm_id_from=333.337.0.0
   }
 ]
 ```
+
 <br>
 
 #### 新浪微博
@@ -182,6 +190,7 @@ https://space.bilibili.com/208259?spm_id_from=333.337.0.0
 https://m.weibo.cn/u/1642634100?uid=1642634100&t=&luicode=10000011&lfid=100103type%3D3%26q%3D%E6%96%B0%E6%B5%AA%26t%3D
 ```
 其中 `1642634100` 为用户 ID。
+
 <br>
 
 新浪新闻：

@@ -9,6 +9,11 @@
 This is a software that can get the latest updated articles from multiple authors on multiple websites at the same time and push them to the chat through multiple robots.
 Modular design so you can add website or push by yourself.
 
+Note on memory usage: Due to the strict risk control of some sites, some sites use Selenium + Firefox, which can occupy up to 600MB or more memory.
+Other sites generally use Requests + Beautiful Soup 4.
+
+<br>
+
 The following sites are currently supported: 
 
 | Name                                  | Module                        |
@@ -64,9 +69,15 @@ Currently supports pushing to:
 ## 介绍
 
 这是一个可以同时从多个网站多位作者获取最新更新的文章并通过多个机器人推送到聊天的软件。相当于订阅作者的动态。
+
 采用模块化设计，所以你可以自行增加站点或推送。
 
-目前支持以下站点:
+内存使用注意：由于部分站点风控严格，部分站点采用了 Selenium + Firefox 方式，占用内存可达 600MB 或以上。
+其他站点一般采用 Requests + Beautiful Soup 4。
+
+<br>
+
+目前支持以下站点：
 
 | 网站名称       | 模块                          |
 | -------------- | ----------------------------- |
@@ -82,7 +93,7 @@ Currently supports pushing to:
 
 <br>
 
-目前支持推送到:
+目前支持推送到：
 
 | 名称          | 推送方式       | 模块             | 库                                                                 |
 | ------------- | -------------- | ---------------- | ------------------------------------------------------------------ |

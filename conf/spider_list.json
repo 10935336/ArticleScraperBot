@@ -1,0 +1,34 @@
+[
+  {
+    "spider_id": "BaiduBaijiahaoSpider",
+    "object_name": "bjh"
+  },
+  {
+    "spider_id": "BaiduTiebaSpider",
+    "object_name": "tb"
+  },
+  {
+    "spider_id": "BilibiliSpider",
+    "object_name": "bb"
+  },
+  {
+    "spider_id": "DouyinSpider",
+    "object_name": "dy"
+  },
+  {
+    "spider_id": "NetEaseSelfMediaSpider",
+    "object_name": "wy"
+  },
+  {
+    "spider_id": "SohuSelfMediaSpider",
+    "object_name": "sh"
+  },
+  {
+    "spider_id": "TencentSelfMediaSpider",
+    "object_name": "tx"
+  },
+  {
+    "spider_id": "WeiboSpider",
+    "object_name": "wb"
+  }
+]

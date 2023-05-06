@@ -1,0 +1,4 @@
+beautifulsoup4==4.12.2
+DingtalkChatbot==1.5.7
+Requests==2.29.0
+selenium==4.9.0

@@ -3,7 +3,7 @@
 # Function: NetEase self-media designated authors crawl articles
 # Author: 10935336
 # Creation date: 2023-04-21
-# Modified date: 2023-05-05
+# Modified date: 2023-05-06
 
 import json
 import logging
@@ -90,6 +90,6 @@ class NetEaseNewsSelfMediaSpider:
             logging.exception(f"Error getting or parsing the response: {error}")
             self.articles_json = []
 
-    def start(self, authors_list_path=r".\conf\neteasenewsselfmedia_authors_list.json"):
+    def start(self, authors_list_path="./conf/neteasenewsselfmedia_authors_list.json"):
         self.load_authors(authors_list_path)
         self.get_articles_list()

@@ -45,7 +45,7 @@ class BaiduBaijiahaoSpider:
         except Exception as error:
             logging.exception(f'{authors_list_path} read error: {error}')
 
-    def fill_uk_for_authors_list(self, authors_list_path=r".\conf\baidubaijiahao_authors_list.json", write_back=True):
+    def fill_uk_for_authors_list(self, authors_list_path="./conf/baidubaijiahao_authors_list.json", write_back=True):
 
         def get_uk_by_id(author_id_l):
             # Get the uk from the author's homepage
@@ -186,6 +186,6 @@ class BaiduBaijiahaoSpider:
         except Exception as error:
             pass
 
-    def start(self, authors_list_path=r".\conf\baidubaijiahao_authors_list.json"):
+    def start(self, authors_list_path="./conf/baidubaijiahao_authors_list.json"):
         self.load_authors(authors_list_path)
         self.get_articles_list()

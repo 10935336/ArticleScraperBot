@@ -161,7 +161,7 @@ class BilibiliSpider:
             logging.exception(f"Error in combine video and articles list: {error}")
             self.articles_json = []
 
-    def start(self, authors_list_path=r".\conf\bilibili_authors_list.json"):
+    def start(self, authors_list_path="./conf/bilibili_authors_list.json"):
         self.load_authors(authors_list_path)
         self.get_videos_list()
         self.get_articles_list()

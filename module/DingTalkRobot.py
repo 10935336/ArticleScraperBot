@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# Function: push to dingtalk
+# Author: 10935336
+# Creation date: 2023-05-06
+# Modified date: 2023-05-06
+
+
 import json
 import logging
 from datetime import datetime
@@ -5,7 +13,7 @@ from dingtalkchatbot.chatbot import DingtalkChatbot
 
 
 
-def push_to_dingtalk(new_articles, dingtalk_bot_key=r".\conf\dingtalk_bot_key.json"):
+def push_to_dingtalk(new_articles, dingtalk_bot_key="./conf/dingtalk_bot_key.json"):
 
     # load dingtalk_bot_key
     try:

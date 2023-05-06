@@ -3,7 +3,7 @@
 # Function: Sohu self-media designated authors crawl articles
 # Author: 10935336
 # Creation date: 2023-04-22
-# Modified date: 2023-05-05
+# Modified date: 2023-05-06
 
 import json
 import logging
@@ -32,7 +32,7 @@ class SohuNewsSelfMediaSpider:
         except Exception as error:
             logging.exception(f'{authors_list_path} read error: {error}')
 
-    def fill_mkey_for_authors_list(self, authors_list_path=r".\conf\sohonewsselfmedia_authors_list.json",
+    def fill_mkey_for_authors_list(self, authors_list_path="./conf/sohonewsselfmedia_authors_list.json",
                                    write_back=True):
 
         def get_mkey_by_id(author_id_l):
@@ -144,6 +144,6 @@ class SohuNewsSelfMediaSpider:
             logging.exception(f"Error getting or parsing the response: {error}")
             self.articles_json = []
 
-    def start(self, authors_list_path=r".\conf\sohonewsselfmedia_authors_list.json"):
+    def start(self, authors_list_path="./conf/sohonewsselfmedia_authors_list.json"):
         self.load_authors(authors_list_path)
         self.get_articles_list()

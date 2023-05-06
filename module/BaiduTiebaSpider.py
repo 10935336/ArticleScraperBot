@@ -3,7 +3,7 @@
 # Function: Bilibili designated authors crawl articles and videos
 # Author: 10935336
 # Creation date: 2023-04-26
-# Modified date: 2023-05-05
+# Modified date: 2023-05-06
 
 import json
 import logging
@@ -94,6 +94,6 @@ class BaiduTiebaSpider:
             logging.exception(f"Error getting or parsing the response: {error}")
             self.articles_json = []
 
-    def start(self, authors_list_path=r".\conf\baidutieba_authors_list.json"):
+    def start(self, authors_list_path="./conf/baidutieba_authors_list.json"):
         self.load_authors(authors_list_path)
         self.get_articles_list()

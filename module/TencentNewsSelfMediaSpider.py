@@ -74,6 +74,6 @@ class TencentNewsSelfMediaSpider:
             logging.exception(f"Error getting or parsing the response: {error}")
             self.articles_json = []
 
-    def start(self, authors_list_path=r".\conf\tencentnewsselfmedia_authors_list.json"):
+    def start(self, authors_list_path="./conf/tencentnewsselfmedia_authors_list.json"):
         self.load_authors(authors_list_path)
         self.get_articles_list()

@@ -4,7 +4,7 @@
 # Note: risk control is very strict
 # Author: 10935336
 # Creation date: 2023-04-23
-# Modified date: 2023-05-05
+# Modified date: 2023-05-06
 
 import json
 import logging
@@ -129,7 +129,7 @@ class DouyinSpider:
         # well douyin has no article for now, lazy to do special handling
         self.articles_json = self.videos_json
 
-    def start(self, authors_list_path=r".\conf\douyin_authors_list.json"):
+    def start(self, authors_list_path="./conf/douyin_authors_list.json"):
         self.load_authors(authors_list_path)
         self.get_videos_list()
         self.videos_list_to_articles_list()

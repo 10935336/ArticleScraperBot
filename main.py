@@ -12,7 +12,7 @@ import os
 
 
 
-def load_spiders_list(spiders_list_path=r".\conf\spider_list.json"):
+def load_spiders_list(spiders_list_path="./conf/spider_list.json"):
     try:
         with open(spiders_list_path, 'r', encoding='utf-8') as r:
             spiders_list = json.load(r)
@@ -67,7 +67,7 @@ def get_all_articles_list(objects_list):
     return json.dumps(all_list, ensure_ascii=False)
 
 
-def get_new_articles(objects_list, previous_articles_file_path='previous_articles.json'):
+def get_new_articles(objects_list, previous_articles_file_path='previous_articles.json', time_threshold=259200):
     """
     Get new articles from the given list of articles and save the new articles list to a file.
 
@@ -98,8 +98,8 @@ def get_new_articles(objects_list, previous_articles_file_path='previous_article
             previous_articles_lists = []
             previous_authors_ids = set()
 
-        # 15 days
-        time_threshold = 15 * 24 * 60 * 60
+        # 15 days  1296000
+        # time_threshold = 15 * 24 * 60 * 60
 
         new_articles = []
 

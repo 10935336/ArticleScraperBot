@@ -7,6 +7,7 @@
 
 import json
 import logging
+import os
 from datetime import datetime
 
 import requests
@@ -161,7 +162,10 @@ class BilibiliSpider:
             logging.exception(f"Error in combine video and articles list: {error}")
             self.articles_json = []
 
-    def start(self, authors_list_path="./conf/bilibili_authors_list.json"):
+    def start(self, authors_list_path=None):
+        if authors_list_path is None:
+            module_dir = os.path.dirname(os.path.abspath(__file__))
+            authors_list_path = os.path.join(module_dir, '..', 'conf', 'bilibili_authors_list.json')
         self.load_authors(authors_list_path)
         self.get_videos_list()
         self.get_articles_list()

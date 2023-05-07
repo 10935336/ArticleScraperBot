@@ -8,12 +8,17 @@
 
 import json
 import logging
+import os
 from datetime import datetime
 from dingtalkchatbot.chatbot import DingtalkChatbot
 
 
 
-def push_to_dingtalk(new_articles, dingtalk_bot_key="./conf/dingtalk_bot_key.json"):
+def push_to_dingtalk(new_articles, dingtalk_bot_key=None):
+
+    if dingtalk_bot_key is None:
+        module_dir = os.path.dirname(os.path.abspath(__file__))
+        dingtalk_bot_key = os.path.join(module_dir, '..', 'conf', 'dingtalk_bot_key.json')
 
     # load dingtalk_bot_key
     try:

@@ -9,10 +9,18 @@ import importlib
 import json
 import logging
 import os
+import site
+from os.path import dirname, join, realpath
+
+# Change to dynamic loading in the future
+from module.DingTalkRobot import push_to_dingtalk
 
 
+def load_spiders_list(spiders_list_path=None):
+    if spiders_list_path is None:
+        module_dir = os.path.dirname(os.path.abspath(__file__))
+        spiders_list_path = os.path.join(module_dir, '.', 'conf', 'spider_list.json')
 
-def load_spiders_list(spiders_list_path="./conf/spider_list.json"):
     try:
         with open(spiders_list_path, 'r', encoding='utf-8') as r:
             spiders_list = json.load(r)
@@ -74,6 +82,11 @@ def get_new_articles(objects_list, previous_articles_file_path='previous_article
     :return: List of new articles found in the given objects_list.
     """
 
+    if previous_articles_file_path is None:
+        module_dir = os.path.dirname(os.path.abspath(__file__))
+        previous_articles_file_path = os.path.join(module_dir, '.', 'previous_articles.json')
+
+
     try:
         # Convert a JSON string to a Python list
         current_articles_lists = json.loads(get_all_articles_list(objects_list))
@@ -99,6 +112,7 @@ def get_new_articles(objects_list, previous_articles_file_path='previous_article
             previous_authors_ids = set()
 
         # 15 days  1296000
+        # 3 days  259200
         # time_threshold = 15 * 24 * 60 * 60
 
         new_articles = []
@@ -151,16 +165,24 @@ def get_new_articles(objects_list, previous_articles_file_path='previous_article
 
 
 if __name__ == "__main__":
-    # log
-    LOG_FORMAT = "%(asctime)s - %(levelname)s - %(message)s"
-    DATE_FORMAT = "%m/%d/%Y %H:%M:%S"
+    # Important, run this to make it run on absolute paths
+    site.addsitedir(realpath(join(dirname(__file__), '..')))
+    site.addsitedir(realpath(dirname(__file__)))
 
-    logging.basicConfig(filename='spider.log', level=logging.INFO, format=LOG_FORMAT, datefmt=DATE_FORMAT,
+    # log
+    log_format = "%(asctime)s - %(levelname)s - %(message)s"
+    data_format = "%m/%d/%Y %H:%M:%S"
+
+    module_dir = os.path.dirname(os.path.abspath(__file__))
+    log_path = os.path.join(module_dir, '.', 'spider.log')
+
+    logging.basicConfig(filename=log_path, level=logging.INFO, format=log_format, datefmt=data_format,
                         encoding='utf-8')
 
     # get new_articles
     objects_list = spiders_init(load_spiders_list())
     new_articles = get_new_articles(objects_list)
 
-    from module.DingTalkRobot import push_to_dingtalk
+    # push to dingtalk
+    logging.info(new_articles)
     push_to_dingtalk(new_articles)

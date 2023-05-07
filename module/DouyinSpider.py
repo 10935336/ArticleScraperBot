@@ -8,6 +8,7 @@
 
 import json
 import logging
+import os
 import re
 import time
 
@@ -129,7 +130,10 @@ class DouyinSpider:
         # well douyin has no article for now, lazy to do special handling
         self.articles_json = self.videos_json
 
-    def start(self, authors_list_path="./conf/douyin_authors_list.json"):
+    def start(self, authors_list_path=None):
+        if authors_list_path is None:
+            module_dir = os.path.dirname(os.path.abspath(__file__))
+            authors_list_path = os.path.join(module_dir, '..', 'conf', 'douyin_authors_list.json')
         self.load_authors(authors_list_path)
         self.get_videos_list()
         self.videos_list_to_articles_list()

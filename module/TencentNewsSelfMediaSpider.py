@@ -7,6 +7,7 @@
 
 import json
 import logging
+import os
 from datetime import datetime
 
 import requests
@@ -74,6 +75,9 @@ class TencentNewsSelfMediaSpider:
             logging.exception(f"Error getting or parsing the response: {error}")
             self.articles_json = []
 
-    def start(self, authors_list_path="./conf/tencentnewsselfmedia_authors_list.json"):
+    def start(self, authors_list_path=None):
+        if authors_list_path is None:
+            module_dir = os.path.dirname(os.path.abspath(__file__))
+            authors_list_path = os.path.join(module_dir, '..', 'conf', 'tencentnewsselfmedia_authors_list.json')
         self.load_authors(authors_list_path)
         self.get_articles_list()

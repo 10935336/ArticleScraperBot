@@ -56,7 +56,7 @@ Currently supports pushing to:
 - Fill in the push key. 
   For example, DingTalk needs to fill in `webhook`, `secret` and `name` in `dingtalk_bot_key.json`;
 
-- Depending on how often you want to get the latest articles, schedule `python3 -m main.py` with an external timer such as crontab or Windows Task Scheduler;
+- Depending on how often you want to get the latest articles, schedule `python3 main.py` with an external timer such as crontab or Windows Task Scheduler;
 
 
 <br>
@@ -72,8 +72,13 @@ Currently supports pushing to:
 
 采用模块化设计，所以你可以自行增加站点或推送。
 
+<br>
+
 内存使用注意：由于部分站点风控严格，部分站点采用了 Selenium + Firefox 方式，占用内存可达 600MB 或以上。
 其他站点一般采用 Requests + Beautiful Soup 4。
+
+中国大陆用户注意：你需要能链接到 Github 以便让 Selenium Manager 自动下载浏览器驱动。
+更多信息请参考 https://www.selenium.dev/blog/2022/introducing-selenium-manager/
 
 <br>
 
@@ -120,7 +125,7 @@ Currently supports pushing to:
 - 填写推送密钥。
   例如钉钉需要在 `dingtalk_bot_key.json` 中填入`webhook`和`secret`和`name`；
 
-- 取决你你多久想获取一次最新文章，使用外部计时器定时执行 `python3 -m main.py` 例如 crontab 或 Window 任务计划程序；
+- 取决你你多久想获取一次最新文章，使用外部计时器定时执行 `python3 main.py` 例如 crontab 或 Window 任务计划程序；
 
 <br>
 
@@ -267,7 +272,7 @@ https://m.weibo.cn/u/1642634100?uid=1642634100&t=&luicode=10000011&lfid=100103ty
 
 ```
 # 每 30 分钟获取一次最新文章
-*/30 * * * * user python3 -m /path-to-spider/main.py
+*/30 * * * * user python3 /path-to-spider/main.py
 
 ```
 

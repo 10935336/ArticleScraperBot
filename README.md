@@ -143,8 +143,8 @@ Currently supports pushing to:
     {
         "title": "标题", 
         "article_id": "文章ID", 
-        "author_id": "作者ID", 
         "author_name": "作者名", 
+        "author_id": "作者ID", 
         "channel_name": "网站名", 
         "link": "链接", 
         "creation_time": "创建时间戳", 
@@ -153,8 +153,8 @@ Currently supports pushing to:
     {
         "title": "标题", 
         "article_id": "文章ID", 
-        "author_id": "作者ID", 
         "author_name": "作者名", 
+        "author_id": "作者ID", 
         "channel_name": "网站名", 
         "link": "链接", 
         "creation_time": "创建时间戳", 
@@ -275,6 +275,7 @@ https://m.weibo.cn/u/1642634100?uid=1642634100&t=&luicode=10000011&lfid=100103ty
 */30 * * * * user python3 /path-to-spider/main.py
 
 ```
+
 
 将 user 替换为你的实际用户。
 

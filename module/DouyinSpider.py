@@ -4,7 +4,7 @@
 # Note: risk control is very strict
 # Author: 10935336
 # Creation date: 2023-04-23
-# Modified date: 2023-05-06
+# Modified date: 2023-05-11
 
 import json
 import logging
@@ -100,8 +100,8 @@ class DouyinSpider:
                         {
                             "title": title,
                             "article_id": article_id,
-                            "author_id": author_id_l,
                             "author_name": author_name_l,
+                            "author_id": author_id_l,
                             "channel_name": "抖音",
                             "link": link,
                             "creation_time": "0",
@@ -137,3 +137,8 @@ class DouyinSpider:
         self.load_authors(authors_list_path)
         self.get_videos_list()
         self.videos_list_to_articles_list()
+
+if __name__ == "__main__":
+    dy = DouyinSpider()
+    dy.start()
+    print(dy.articles_json)

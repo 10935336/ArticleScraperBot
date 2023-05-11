@@ -3,7 +3,7 @@
 # Function: Bilibili designated authors crawl articles and videos
 # Author: 10935336
 # Creation date: 2023-04-26
-# Modified date: 2023-05-06
+# Modified date: 2023-05-11
 
 import json
 import logging
@@ -21,7 +21,7 @@ class BaiduTiebaSpider:
         self.articles_json = ''
         self.authors_list = []
         self.headers = {
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36",
         }
 
     def load_authors(self, authors_list_path):
@@ -80,8 +80,8 @@ class BaiduTiebaSpider:
                             {
                                 "title": title,
                                 "article_id": article_id,
-                                "author_id": author_id_l,
                                 "author_name": author_name_l,
+                                "author_id": author_id_l,
                                 "channel_name": "百度贴吧" + '-' + bar_name,
                                 "link": link,
                                 "creation_time": str(creation_time),
@@ -101,3 +101,8 @@ class BaiduTiebaSpider:
             authors_list_path = os.path.join(module_dir, '..', 'conf', 'baidutieba_authors_list.json')
         self.load_authors(authors_list_path)
         self.get_articles_list()
+
+if __name__ == "__main__":
+    tb = BaiduTiebaSpider()
+    tb.start()
+    print(tb.articles_json)

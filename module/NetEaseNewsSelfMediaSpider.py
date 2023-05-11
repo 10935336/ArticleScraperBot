@@ -3,7 +3,7 @@
 # Function: NetEase self-media designated authors crawl articles
 # Author: 10935336
 # Creation date: 2023-04-21
-# Modified date: 2023-05-06
+# Modified date: 2023-05-11
 
 import json
 import logging
@@ -73,8 +73,8 @@ class NetEaseNewsSelfMediaSpider:
                             {
                                 'title': title,
                                 "article_id": article_id,
-                                'author_id': author_id_l,
-                                'author_name': author_name_l,
+                                "author_name": author_name_l,
+                                "author_id": author_id_l,
                                 "channel_name": "网易新闻",
                                 'link': link,
                                 "creation_time": str(timestamp),
@@ -85,7 +85,7 @@ class NetEaseNewsSelfMediaSpider:
                     self.articles_json = json.dumps(new_list, ensure_ascii=False)
 
                 else:
-                    logging.exception("Get response error")
+                    logging.exception(f"Get response error in {url}")
 
         except Exception as error:
             logging.exception(f"Error getting or parsing the response: {error}")
@@ -97,3 +97,9 @@ class NetEaseNewsSelfMediaSpider:
             authors_list_path = os.path.join(module_dir, '..', 'conf', 'neteasenewsselfmedia_authors_list.json')
         self.load_authors(authors_list_path)
         self.get_articles_list()
+
+
+if __name__ == "__main__":
+    wy = NetEaseNewsSelfMediaSpider()
+    wy.start()
+    print(wy.articles_json)

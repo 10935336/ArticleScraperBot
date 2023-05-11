@@ -3,7 +3,7 @@
 # Function: Bilibili designated authors crawl articles and videos
 # Author: 10935336
 # Creation date: 2023-04-23
-# Modified date: 2023-05-06
+# Modified date: 2023-05-11
 
 import json
 import logging
@@ -60,8 +60,8 @@ class BilibiliSpider:
                             {
                                 "title": None,
                                 "article_id": "0",
-                                "author_id": author_id_l,
                                 "author_name": author_name_l,
+                                "author_id": author_id_l,
                                 "channel_name": "哔哩哔哩视频",
                                 "link": None,
                                 "creation_time": "0",
@@ -80,8 +80,8 @@ class BilibiliSpider:
                                 {
                                     "title": title,
                                     "article_id": str(item['bvid']),
-                                    "author_id": author_id_l,
                                     "author_name": author_name_l,
+                                    "author_id": author_id_l,
                                     "channel_name": "哔哩哔哩视频",
                                     "link": link,
                                     "creation_time": str(creation_time),
@@ -126,8 +126,8 @@ class BilibiliSpider:
                                 {
                                     "title": title,
                                     "article_id": str(item['id']),
-                                    "author_id": author_id_l,
                                     "author_name": author_name_l,
+                                    "author_id": author_id_l,
                                     "channel_name": "哔哩哔哩文章",
                                     "link": link,
                                     "creation_time": str(creation_time),
@@ -140,8 +140,8 @@ class BilibiliSpider:
                             {
                                 "title": None,
                                 "article_id": '0',
-                                "author_id": author_id_l,
                                 "author_name": author_name_l,
+                                "author_id": author_id_l,
                                 "channel_name": "哔哩哔哩文章",
                                 "link": None,
                                 "creation_time": "0",
@@ -170,3 +170,8 @@ class BilibiliSpider:
         self.get_videos_list()
         self.get_articles_list()
         self.combine_video_and_articles()
+
+if __name__ == "__main__":
+    bb = BilibiliSpider()
+    bb.start()
+    print(bb.articles_json)

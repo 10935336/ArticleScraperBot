@@ -3,34 +3,37 @@
 # Function: push to dingtalk
 # Author: 10935336
 # Creation date: 2023-05-06
-# Modified date: 2023-05-06
+# Modified date: 2023-05-11
 
 
 import json
 import logging
 import os
 from datetime import datetime
+
 from dingtalkchatbot.chatbot import DingtalkChatbot
 
 
-
-def push_to_dingtalk(new_articles, dingtalk_bot_key=None):
-
-    if dingtalk_bot_key is None:
+def load_dingtalk_bot_conf(dingtalk_bot_conf_path=None):
+    if dingtalk_bot_conf_path is None:
         module_dir = os.path.dirname(os.path.abspath(__file__))
-        dingtalk_bot_key = os.path.join(module_dir, '..', 'conf', 'dingtalk_bot_key.json')
+        dingtalk_bot_conf_path = os.path.join(module_dir, '..', 'conf', 'dingtalk_bot_conf.json')
 
-    # load dingtalk_bot_key
     try:
-        with open(dingtalk_bot_key, 'r', encoding='utf-8') as r:
-            dingtalk_bot_key_json = json.load(r)
+        with open(dingtalk_bot_conf_path, 'r', encoding='utf-8') as r:
+            dingtalk_bot_conf_json = json.load(r)
+            return dingtalk_bot_conf_json
     except Exception as error:
-        logging.exception(f'{dingtalk_bot_key} read error: {error}')
+        logging.exception(f'{dingtalk_bot_conf_path} read error: {error}')
+
+
+def push_new_articles_to_dingtalk(new_articles, dingtalk_bot_conf_path=None):
+    dingtalk_bot_conf_json = load_dingtalk_bot_conf(dingtalk_bot_conf_path)
 
     # push
     try:
-        if dingtalk_bot_key_json:
-            for bot in dingtalk_bot_key_json:
+        if dingtalk_bot_conf_json:
+            for bot in dingtalk_bot_conf_json:
                 webhook = bot['webhook']
                 secret = bot['secret']
 
@@ -63,6 +66,48 @@ def push_to_dingtalk(new_articles, dingtalk_bot_key=None):
                         # DingTalk is now limited to sending 20 messages per minute,
                         # if it exceeds, it will be sent to the waiting queue
                         dingtalk_bot.send_text(msg=msg, is_at_all=False)
+
+    except Exception as error:
+        logging.exception(f'Push to DingTalk error: {error}')
+
+
+def push_summary_to_dingtalk(articles_summary, dingtalk_bot_conf_path=None):
+    dingtalk_bot_conf_json = load_dingtalk_bot_conf(dingtalk_bot_conf_path)
+
+    # push
+    try:
+        if dingtalk_bot_conf_json:
+            for bot in dingtalk_bot_conf_json:
+                webhook = bot['webhook']
+                secret = bot['secret']
+
+                dingtalk_bot = DingtalkChatbot(webhook, secret=secret)
+
+                logging.info(f"Now pushing summary to: {bot['name']}")
+
+                msgs = []
+                for team_name in articles_summary:
+
+                    start_time_obj = datetime.fromtimestamp(int(articles_summary['time']['start_time']))
+                    start_time = start_time_obj.strftime('%Y-%m-%d %H:%M:%S')
+
+                    end_time_obj = datetime.fromtimestamp(int(articles_summary['time']['end_time']))
+                    end_time = end_time_obj.strftime('%Y-%m-%d %H:%M:%S')
+
+                    if team_name != "time":
+                        msg = f"从 {start_time} \n到 {end_time}\n"
+                        msg += f"【{team_name}】在以下渠道\n"
+                        for clannel_name in articles_summary[team_name]:
+                            if clannel_name != "total":
+                                msg += f"{clannel_name} 发布 {articles_summary[team_name][clannel_name]} 篇资讯\n"
+                        msg += f"总共发送 {articles_summary[team_name]['total']} 篇资讯"
+                        msgs.append(msg)
+
+                for msg in msgs:
+                    # DingTalk is now limited to sending 20 messages per minute,
+                    # if it exceeds, it will be sent to the waiting queue
+                    dingtalk_bot.send_text(msg=msg, is_at_all=False)
+
 
     except Exception as error:
         logging.exception(f'Push to DingTalk error: {error}')

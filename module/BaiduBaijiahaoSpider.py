@@ -5,7 +5,7 @@
 # and the page must be refreshed to get the correct response.
 # Author: 10935336
 # Creation date: 2023-04-20
-# Modified date: 2023-05-06
+# Modified date: 2023-05-11
 
 
 import json
@@ -102,15 +102,16 @@ class BaiduBaijiahaoSpider:
         except Exception as error:
             logging.exception(f'Cannot get author_id: {error}')
 
-        # Make sure selenium exits, but doesn't always work
+        # Make sure selenium quits, but doesn't always work
         try:
             self.driver.close()
-        except Exception as error:
+        except Exception:
             pass
 
         try:
             self.driver.quit()
-        except Exception as error:
+            self.driver.quit()
+        except Exception:
             pass
 
         if write_back:
@@ -165,9 +166,9 @@ class BaiduBaijiahaoSpider:
                         {
                             "title": title,
                             "article_id": article_id,
-                            "author_id": author_id_l,
                             "author_name": author_name_l,
-                            "channel_name": " 百度百家号",
+                            "author_id": author_id_l,
+                            "channel_name": "百度百家号",
                             "link": link,
                             "creation_time": str(creation_time),
                             "snapshot_time": str(current_time)
@@ -180,15 +181,16 @@ class BaiduBaijiahaoSpider:
             logging.exception(f"Error getting or parsing the response: {error}")
             self.articles_json = []
 
+        # Make sure selenium quits, but doesn't always work
         try:
             self.driver.close()
-        except Exception as error:
+        except Exception:
             pass
 
         try:
             self.driver.quit()
             self.driver.quit()
-        except Exception as error:
+        except Exception:
             pass
 
     def start(self, authors_list_path=None):
@@ -197,3 +199,8 @@ class BaiduBaijiahaoSpider:
             authors_list_path = os.path.join(module_dir, '..', 'conf', 'baidubaijiahao_authors_list.json')
         self.load_authors(authors_list_path)
         self.get_articles_list()
+
+if __name__ == "__main__":
+    bjh = BaiduBaijiahaoSpider()
+    bjh.start()
+    print(bjh.articles_json)

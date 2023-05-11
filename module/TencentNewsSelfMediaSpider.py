@@ -3,7 +3,7 @@
 # Function: Tencent self-media designated authors crawl articles
 # Author: 10935336
 # Creation date: 2023-04-22
-# Modified date: 2023-05-06
+# Modified date: 2023-05-11
 
 import json
 import logging
@@ -60,8 +60,8 @@ class TencentNewsSelfMediaSpider:
                             {
                                 "title": title,
                                 "article_id": article_id,
-                                "author_id": author_id_l,
                                 "author_name": author_name_l,
+                                "author_id": author_id_l,
                                 "channel_name": "腾讯新闻",
                                 "link": link,
                                 "creation_time": str(creation_time),
@@ -81,3 +81,8 @@ class TencentNewsSelfMediaSpider:
             authors_list_path = os.path.join(module_dir, '..', 'conf', 'tencentnewsselfmedia_authors_list.json')
         self.load_authors(authors_list_path)
         self.get_articles_list()
+
+if __name__ == "__main__":
+    tx = TencentNewsSelfMediaSpider()
+    tx.start()
+    print(tx.articles_json)

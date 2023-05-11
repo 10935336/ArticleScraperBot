@@ -6,7 +6,7 @@
 # m.weibo.com has almost no authentication, but weibo.com is very strict.
 # Author: 10935336
 # Creation date: 2023-04-24
-# Modified date: 2023-05-06
+# Modified date: 2023-05-11
 
 import json
 import logging
@@ -75,8 +75,8 @@ class SinaWeiboSpider:
                             {
                                 "title": text,
                                 "article_id": article_id,
-                                "author_id": author_id_l,
                                 "author_name": author_name_l,
+                                "author_id": author_id_l,
                                 "channel_name": "新浪微博",
                                 "link": link,
                                 "creation_time": str(timestamp),
@@ -95,3 +95,8 @@ class SinaWeiboSpider:
             authors_list_path = os.path.join(module_dir, '..', 'conf', 'sinaweibo_authors_list.json')
         self.load_authors(authors_list_path)
         self.get_articles_list()
+
+if __name__ == "__main__":
+    wb = SinaWeiboSpider()
+    wb.start()
+    print(wb.articles_json)

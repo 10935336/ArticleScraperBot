@@ -60,7 +60,7 @@ class BaiduBaijiahaoHTMLSpider:
                 except Exception as error:
                     logging.exception(f'Cannot find wanted value in authors_list: {error}')
 
-                    self.driver.implicitly_wait(10)
+                self.driver.implicitly_wait(10)
 
                 url = "https://author.baidu.com/home/" + str(author_id_l)
 

@@ -281,5 +281,33 @@ https://m.weibo.cn/u/1642634100?uid=1642634100&t=&luicode=10000011&lfid=100103ty
 
 注意，此文件必须以换行符结尾，不要删掉最后的空行。
 
+## 网站注意事项
+
+#### 新浪微博
+
+###### 获取用户 ID
+
+如果用户有自定义主页，如`新浪新闻`的主页是`https://weibo.com/sinapapers`，此时打开浏览器控制台，切换为手机模式，刷新页面得到`https://m.weibo.cn/u/2028810631`，2028810631 即为用户 ID。
+
+
+#### Youtube
+
+###### 获取 API Key
+Youtube 抓取使用官方 API - YouTube Data API v3。
+
+首先访问 https://console.cloud.google.com/apis/api/youtube.googleapis.com 登录你的 Google 账号。
+
+点击启用 YouTube Data API v3，然后点击左侧凭据，创建凭据。
+
+API 限制选择"限制密钥"，然后选择"YouTube Data API v3"，然后记录 API Key。
+
+此 API 为免费，默认情况下每天配额 10000 次，不必担心收费。
+
+
+###### 获取频道 ID
+
+如果用户有自定义主页，如`YouTube`的主页是`https://www.youtube.com/@YouTube`，你可以访问此网站 https://commentpicker.com/youtube-channel-id.php 获取频道 ID，`UCBR8-60-B28hp2BmDPdntcQ` 即为频道 ID。
+
+
 
 

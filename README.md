@@ -16,17 +16,19 @@ Other sites generally use Requests + Beautiful Soup 4.
 
 The following sites are currently supported: 
 
-| Name                                  | Module                        |
-| ------------------------------------- | ----------------------------- |
-| Baidu Baijiahao 百度百家号            | BaiduBaijiahaoSpider.py       |
-| Baidu Tieba 百度贴吧                  | BaiduTiebaSpider.py           |
-| Bilibili 哔哩哔哩                     | BilibiliSpider.py             |
-| Douyin(not tiktok) 抖音               | DouyinSpider.py               |
-| NetEase News SelfMedia 网易新闻网易号 | NetEaseNewsSelfMediaSpider.py |
-| Sohu News SelfMedia 搜狐新闻搜狐号    | SohuNewsSelfMediaSpider.py    |
-| Tencent News SelfMedia 腾讯新闻企鹅号 | TencentNewsSelfMediaSpider.py |
-| Sina Weibo 新浪微博                   | SinaWeiboSpider.py            |
-
+| Name                                  | Module                        |Crawl method                  |
+| ------------------------------------- | ----------------------------- |----------------------------- |
+| Baidu Baijiahao 百度百家号            | BaiduBaijiahaoSpider.py       |Selenium + AJAX                |
+| Baidu Baijiahao 百度百家号            | BaiduBaijiahaoHTMLSpider.py   |Selenium + HTML                |
+| Baidu Tieba 百度贴吧                  | BaiduTiebaSpider.py           |Selenium + HTML                |
+| Bilibili 哔哩哔哩                     | BilibiliSpider.py             |Requests + AJAX                |
+| Douyin(not tiktok) 抖音               | DouyinSpider.py              |Selenium + HTML                 |
+| NetEase News SelfMedia 网易新闻网易号 | NetEaseNewsSelfMediaSpider.py |Requests + HTML                 |
+| Sina Weibo 新浪微博                   | SinaWeiboSpider.py            |Requests + AJAX                |
+| Sohu News SelfMedia 搜狐新闻搜狐号    | SohuNewsSelfMediaSpider.py    |Requests + AJAX                 |
+| Tencent News SelfMedia 腾讯新闻企鹅号 | TencentNewsSelfMediaSpider.py |Requests + AJAX                 |
+| Youtube                              | YoutubeSpider.py              |Requests + API                  |
+ 
 <br>
 
 Currently supports pushing to:
@@ -84,16 +86,24 @@ Currently supports pushing to:
 
 目前支持以下站点：
 
-| 网站名称       | 模块                          |
-| -------------- | ----------------------------- |
-| 百度百家号     | BaiduBaijiahaoSpider.py       |
-| 百度贴吧       | BaiduTiebaSpider.py           |
-| 哔哩哔哩       | BilibiliSpider.py             |
-| 抖音           | DouyinSpider.py               |
-| 网易新闻网易号 | NetEaseNewsSelfMediaSpider.py |
-| 搜狐新闻搜狐号 | SohuNewsSelfMediaSpider.py    |
-| 腾讯新闻企鹅号 | TencentNewsSelfMediaSpider.py |
-| 新浪微博       | SinaWeiboSpider.py            |
+| 站点名称                                  | 模块                          |抓取方式                       |
+| ------------------------------------- | ----------------------------- |----------------------------- |
+| 百度百家号            | BaiduBaijiahaoSpider.py       |Selenium + AJAX                |
+|百度百家号            | BaiduBaijiahaoHTMLSpider.py   |Selenium + HTML                |
+|百度贴吧                  | BaiduTiebaSpider.py           |Selenium + HTML                |
+| 哔哩哔哩                     | BilibiliSpider.py             |Requests + AJAX                |
+| 抖音               | DouyinSpider.py              |Selenium + HTML                 |
+| 网易新闻网易号 | NetEaseNewsSelfMediaSpider.py |Requests + HTML                 |
+| 新浪微博                   | SinaWeiboSpider.py            |Requests + AJAX                |
+| 搜狐新闻搜狐号    | SohuNewsSelfMediaSpider.py    |Requests + AJAX                 |
+| 腾讯新闻企鹅号 | TencentNewsSelfMediaSpider.py |Requests + AJAX                 |
+| Youtube                              | YoutubeSpider.py              |Requests + API                  |
+
+
+
+
+
+
 
 
 <br>

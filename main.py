@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Author: 10935336
 # Creation date: 2023-04-20
-# Modified date: 2023-05-11
+# Modified date: 2023-05-12
 
 import importlib
 import site
@@ -186,13 +186,20 @@ def get_articles_summary(all_current_articles_lists, start_time_threshold=86400,
     if end_time is None:
         try:
             end_time = int(current_articles_lists[0][0]['snapshot_time'])
+        except Exception as error:
+            logging.exception(f'Cannot get end_time: {error}')
+            logging.error(f'trying to set end_time to current time')
+            end_time = int(datetime.now().timestamp())
+
+        try:
             start_time = end_time - int(start_time_threshold)
         except Exception as error:
-            logging.exception(f'Cannot get end_time or start_time: {error}')
+            logging.exception(f'Cannot get start_time: {error}')
 
     try:
         for current_article_list in current_articles_lists:
             for current_article in current_article_list:
+
                 # Check if the article is within start_time to end_time
                 if start_time <= int(current_article['creation_time']) <= end_time:
                     pass
@@ -276,13 +283,12 @@ if __name__ == "__main__":
     logging.basicConfig(filename=log_path, level=logging.INFO, format=log_format, datefmt=data_format,
                         encoding='utf-8')
 
-    # get new_articles
+    # get current_articles_lists
     objects_list = spiders_init(load_spiders_list())
     all_current_articles_lists = get_all_current_articles_lists(objects_list)
-    new_articles = get_new_articles(all_current_articles_lists)
 
-    # get articles_summary
-    articles_summary = get_articles_summary(all_current_articles_lists)
+    # get new_articles
+    new_articles = get_new_articles(all_current_articles_lists)
 
     # push new articles to dingtalk
     logging.info(f'new articles: {new_articles}')
@@ -290,5 +296,8 @@ if __name__ == "__main__":
 
     # If the current time is around 20 o'clock for 20 minutes
     if time_judgment(target_time_hour=20, time_range=timedelta(minutes=20)):
+        # get articles_summary
+        articles_summary = get_articles_summary(all_current_articles_lists)
+        logging.info(f'articles summary: {articles_summary}')
         # push summary to dingtalk
         push_summary_to_dingtalk(articles_summary)

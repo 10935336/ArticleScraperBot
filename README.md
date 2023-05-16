@@ -139,6 +139,94 @@ Currently supports pushing to:
 
 <br>
 
+## 推送内容
+
+#### 新文章推送
+默认情况下会以以下格式推送（硬编码在 Robot 模块中）
+
+```
+【author_name】发布资讯
+
+渠道：channel_name （硬编码在模块中）
+
+标题：title
+
+链接：link
+
+发布时间：creation_time（%Y-%m-%d %H:%M:%S）
+
+本次推送共 foo 条，当前第 bar 条
+截取于 snapshot_time（%Y-%m-%d %H:%M:%S）
+```
+
+```
+【创伤小组-成员A】发布资讯
+
+渠道：内部通讯
+
+标题：白金会员于 xx 坐标受到伤害
+
+链接：https://example.com
+
+发布时间：2077-05-13 20:00:53
+
+本次推送共 2 条，当前第 1 条
+截取于 2077-05-13 20:00:53
+```
+
+
+
+推送频率取决于你多久执行一次本程序。
+
+
+#### 汇总推送
+默认情况下还会按以下格式在指定时间推送汇总：
+
+```
+从 time_judgment()中指定的时间减去 24 小时
+到 time_judgment()中指定的时间
+【team_name】在以下渠道
+channel_name 发布 foo 篇资讯
+channel_name 发布 bat 篇资讯
+总共发送 foo + bar 篇资讯
+```
+
+```
+从 2077-05-12 20:00:53 
+到 2077-05-13 20:00:53
+【创伤小组】在以下渠道
+内部通讯 发布 100 篇资讯
+某某平台 发布 20 篇资讯
+某某平台 发布 30 篇资讯
+总共发送 150 篇资讯
+```
+
+
+team_name 是从 author_name 中提取的。
+如果多位作者属于同一个团体，则可以按照 `团体名-作者名` 的形式填写 author_name。
+如果 author_name 中不含有 `-` 则 team_name 等于 author_name。
+
+
+推送时间由 `main.py` 中的 time_judgment() 控制
+```
+    # If the current time is around 20 o'clock for 20 minutes
+    if time_judgment(target_time_hour=20, time_range=timedelta(minutes=20)):
+        # get articles_summary
+        articles_summary = get_articles_summary(all_current_articles_lists)
+        # push summary to dingtalk
+        logging.info(f'articles summary: {articles_summary}')
+        push_summary_to_dingtalk(articles_summary)
+```
+在 `main.py` 中找到此代码，意味在 20 点的前后 15 分钟内，如果执行本程序，则会进行汇总推送。
+若要修改时间，修改此行代码即可，如 18 点的前后 30 分钟内：
+```
+    if time_judgment(target_time_hour=18, time_range=timedelta(minutes=30)):
+```
+
+
+
+<br>
+
 ## 网站模块扩展方式
 
 在 `module` 文件夹内创建你的模块，在模块内创建和文件名同名的类。

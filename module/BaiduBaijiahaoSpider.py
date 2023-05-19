@@ -5,13 +5,14 @@
 # and the page must be refreshed to get the correct response.
 # Author: 10935336
 # Creation date: 2023-04-20
-# Modified date: 2023-05-11
+# Modified date: 2023-05-19
 
 
 import json
 import logging
 import os
 import re
+import time
 from datetime import datetime
 
 from selenium import webdriver
@@ -63,12 +64,12 @@ class BaiduBaijiahaoSpider:
 
                 if uk_match:
                     uk_value = uk_match.group(1)
-                    if uk_value is None:
-                        print("cannot get uk")
+                    if uk_value is None or uk_value == 'null':
+                        logging.exception("cannot get uk")
                     else:
                         return uk_value
                 else:
-                    print('uk value not found')
+                    logging.exception('uk value not found')
 
             except Exception as error:
                 logging.exception(f'Cannot get uk: {error}')
@@ -94,7 +95,9 @@ class BaiduBaijiahaoSpider:
 
             # Check if the author list has uk, if not, add it
             for item in self.authors_list:
-                if 'author_uk' not in item:
+                if 'author_uk' not in item or item['author_uk'] == 'null' or item['author_uk'] == 'Null' or item[
+                    'author_uk'] == None:
+                    # Pycharm want we to do "'author_uk' is None", but CPython wants me to do "'author_uk' == None"
                     author_id = item['author_id']
                     uk_value = get_uk_by_id(author_id)
                     item['author_uk'] = uk_value
@@ -117,69 +120,82 @@ class BaiduBaijiahaoSpider:
         if write_back:
             write_uk_back_to_list(authors_list_path)
 
-    def get_articles_list(self, tab='article', contents_num='50', type_='newhome', action='dynamic', format_='json'):
+    def get_articles_list(self, retry_times=3, tab='article', contents_num='50', type_='newhome', action='dynamic',
+                          format_='json'):
         new_list = []
         current_time = int(datetime.now().timestamp())
 
         try:
             for item in self.authors_list:
-                if 'author_uk' not in item:
+                if 'author_uk' not in item or item['author_uk'] == 'null' or item['author_uk'] == 'Null' or item[
+                    'author_uk'] == None:
                     self.fill_uk_for_authors_list()
         except Exception as error:
             logging.exception(f'Get uk error: {error}')
 
-        try:
-            self.driver_init()
-            for author in self.authors_list:
-                try:
-                    author_id_l = author['author_id']
-                    author_name_l = author['author_name']
-                    author_uk_l = author['author_uk']
-                except Exception as error:
-                    logging.exception(f'Cannot find wanted value in authors_list: {error}')
+        self.driver_init()
 
-                url = "https://mbd.baidu.com/webpage?" + "tab=" + tab + "&num=" + contents_num + "&type=" + type_ \
-                      + "&action=" + action + "&format=" + format_ + "&uk=" + author_uk_l
+        for retry in range(retry_times):
+            try:
+                for author in self.authors_list:
+                    try:
+                        author_id_l = author['author_id']
+                        author_name_l = author['author_name']
+                        author_uk_l = author['author_uk']
+                    except Exception as error:
+                        logging.exception(f'Cannot find wanted value in authors_list: {error}')
 
-                self.driver.implicitly_wait(10)
+                    url = "https://mbd.baidu.com/webpage?" + "tab=" + tab + "&num=" + contents_num + "&type=" + type_ \
+                          + "&action=" + action + "&format=" + format_ + "&uk=" + author_uk_l
 
-                # too fast will connection reset
-                # time.sleep(2)
+                    self.driver.implicitly_wait(10)
 
-                self.driver.get(url=url)
-                self.driver.refresh()
-                self.driver.refresh()
+                    # too fast will connection reset
+                    time.sleep(3)
 
-                raw_json = self.driver.find_element(By.XPATH, "/html/body/pre").text
+                    self.driver.get(url=url)
+                    self.driver.refresh()
+                    self.driver.refresh()
 
-                # avoid escape
-                raw_json_unescaped = json.loads(json.dumps(json.loads(raw_json), ensure_ascii=False))
+                    raw_json = self.driver.find_element(By.XPATH, "/html/body/pre").text
 
-                # Iterate through the list in the raw JSON data
-                for item in raw_json_unescaped['data']['list']:
-                    title = item['itemData']['title']
-                    creation_time = item['itemData']['created_at']
-                    link = item['itemData']['url']
-                    article_id = item['itemData']['shoubai_c_articleid']
+                    # avoid escape
+                    raw_json_unescaped = json.loads(json.dumps(json.loads(raw_json), ensure_ascii=False))
 
-                    new_list.append(
-                        {
-                            "title": title,
-                            "article_id": article_id,
-                            "author_name": author_name_l,
-                            "author_id": author_id_l,
-                            "channel_name": "百度百家号",
-                            "link": link,
-                            "creation_time": str(creation_time),
-                            "snapshot_time": str(current_time)
-                        }
-                    )
+                    # Iterate through the list in the raw JSON data
+                    for item in raw_json_unescaped['data']['list']:
+                        title = item['itemData']['title']
+                        creation_time = item['itemData']['created_at']
+                        link = item['itemData']['url']
+                        article_id = item['itemData']['shoubai_c_articleid']
 
-            self.articles_json = json.dumps(new_list, ensure_ascii=False)
+                        new_list.append(
+                            {
+                                "title": title,
+                                "article_id": article_id,
+                                "author_name": author_name_l,
+                                "author_id": author_id_l,
+                                "channel_name": "百度百家号",
+                                "link": link,
+                                "creation_time": str(creation_time),
+                                "snapshot_time": str(current_time)
+                            }
+                        )
 
-        except Exception as error:
-            logging.exception(f"Error getting or parsing the response: {error}")
+                self.articles_json = json.dumps(new_list, ensure_ascii=False)
+                # break on success
+                if self.articles_json:
+                    break
+
+            except Exception as error:
+                logging.exception(f"Error on getting or parsing the response: {error}")
+                self.articles_json = []
+
+        # Make sure self.articles_json = [] after the number of retries is exceeded and still failed
+        if not new_list:
             self.articles_json = []
+            logging.warning(f"Max retries is exceeded in {self}")
+            logging.warning(f"{self} is set to []")
 
         # Make sure selenium quits, but doesn't always work
         try:
@@ -199,6 +215,7 @@ class BaiduBaijiahaoSpider:
             authors_list_path = os.path.join(module_dir, '..', 'conf', 'baidubaijiahao_authors_list.json')
         self.load_authors(authors_list_path)
         self.get_articles_list()
+
 
 if __name__ == "__main__":
     bjh = BaiduBaijiahaoSpider()

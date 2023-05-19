@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Author: 10935336
 # Creation date: 2023-04-20
-# Modified date: 2023-05-12
+# Modified date: 2023-05-19
 
 import importlib
 import site
@@ -73,9 +73,14 @@ def get_all_current_articles_lists(objects_list):
 
 
 def get_new_articles(all_current_articles_lists, previous_articles_file_path='previous_articles.json',
-                     time_threshold=259200):
+                     time_threshold=86400):
     """
     Get new articles from the given list of articles and save the new articles list to a file.
+
+    time_threshold = days * 24 * 60 * 60
+    15 days = 1296000
+    3 days = 259200
+    1 day = 86400
 
     :return [{},{}]
     """
@@ -108,10 +113,6 @@ def get_new_articles(all_current_articles_lists, previous_articles_file_path='pr
             previous_articles_lists = []
             previous_authors_ids = set()
 
-        # 15 days  1296000
-        # 3 days  259200
-        # time_threshold = 15 * 24 * 60 * 60
-
         new_articles = []
 
         # Loop through each article in the current article list
@@ -124,10 +125,14 @@ def get_new_articles(all_current_articles_lists, previous_articles_file_path='pr
                 if current_article['author_id'] not in previous_authors_ids:
                     continue
 
+                # If some APIs do not return,
+                # current_article['article_id'] will be recorded as 0, skipped to avoid misjudgment
+                if current_article['article_id'] == 0 or current_article['article_id'] == "0":
+                    continue
+
                 # Skip when the difference between creation_time and snapshot_time exceeds the value of time_threshold
-                # and skip time diff judgment for articles with creation_time == 0
-                # further avoid misjudgment
-                if current_article['creation_time'] != 0:
+                # and skip time diff judgment for articles with creation_time == 0, further avoid misjudgment
+                if current_article['creation_time'] != 0 or current_article['creation_time'] != "0":
                     time_diff = int(current_article['snapshot_time']) - int(current_article['creation_time'])
                     if time_diff > time_threshold:
                         is_new = False
@@ -252,11 +257,11 @@ def get_articles_summary(all_current_articles_lists, start_time_threshold=86400,
 
 def time_judgment(target_time_hour: int, time_range: timedelta) -> bool:
     """
-    Determine whether the current time is near a certain range, and if so, return True
+    Determine whether the current time is near a certain range, and if so, return True.
     for example,
-    time_judgment(target_time=20, time_range=timedelta(minutes=20) return True if 15 minutes around 20
+    time_judgment(target_time=20, time_range=timedelta(minutes=20) returns True if 15 minutes around 20
 
-    :param target_time_hour: Pass in the hour, e.g. 15 is 3pm
+    :param target_time_hour: Pass in the hour, e.g., 15 is 3pm
     :param time_range: Pass in the delivery time range in timedelta(), for example, timedelta(minutes=20) is 20 minutes before and after target_time
     :return: True or False
     """
@@ -267,6 +272,17 @@ def time_judgment(target_time_hour: int, time_range: timedelta) -> bool:
     return start_time <= current_time <= end_time
 
 
+def setup_logging(log_name='spider.log'):
+    log_format = "%(asctime)s - %(levelname)s - %(message)s"
+    data_format = "%Y/%m/%d %H:%M:%S"
+
+    logdir = os.path.dirname(os.path.abspath(__file__))
+    log_path = os.path.join(logdir, '.', log_name)
+
+    logging.basicConfig(filename=log_path, level=logging.INFO, format=log_format, datefmt=data_format,
+                        encoding='utf-8')
+
+
 if __name__ == "__main__":
     # Important
     # run this to make it run on absolute paths
@@ -274,14 +290,7 @@ if __name__ == "__main__":
     site.addsitedir(realpath(dirname(__file__)))
 
     # log
-    log_format = "%(asctime)s - %(levelname)s - %(message)s"
-    data_format = "%m/%d/%Y %H:%M:%S"
-
-    dir = os.path.dirname(os.path.abspath(__file__))
-    log_path = os.path.join(dir, '.', 'spider.log')
-
-    logging.basicConfig(filename=log_path, level=logging.INFO, format=log_format, datefmt=data_format,
-                        encoding='utf-8')
+    setup_logging()
 
     # get current_articles_lists
     objects_list = spiders_init(load_spiders_list())
@@ -298,6 +307,6 @@ if __name__ == "__main__":
     if time_judgment(target_time_hour=20, time_range=timedelta(minutes=20)):
         # get articles_summary
         articles_summary = get_articles_summary(all_current_articles_lists)
-        logging.info(f'articles summary: {articles_summary}')
         # push summary to dingtalk
+        logging.info(f'articles summary: {articles_summary}')
         push_summary_to_dingtalk(articles_summary)

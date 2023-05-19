@@ -3,7 +3,7 @@
 # Function: Sohu self-media designated authors crawl articles
 # Author: 10935336
 # Creation date: 2023-04-22
-# Modified date: 2023-05-11
+# Modified date: 2023-05-19
 
 import json
 import logging
@@ -46,7 +46,7 @@ class SohuNewsSelfMediaSpider:
                     mkey_match = mkey_pattern.search(content)
                     if mkey_match:
                         mkey_value = mkey_match.group(1)
-                        if mkey_value is None:
+                        if mkey_value is None or mkey_value == 'null':
                             logging.exception("Cannot get mkey")
                         else:
                             return mkey_value
@@ -71,7 +71,8 @@ class SohuNewsSelfMediaSpider:
         try:
             # Check if the author list has mkey, if not, add it
             for item in self.authors_list:
-                if 'author_mkey' not in item:
+                if 'author_mkey' not in item or item['author_mkey'] == 'null' or item['author_mkey'] == 'Null' or item[
+                    'author_mkey'] == None:
                     author_id = item['author_id']
                     mkey_value = get_mkey_by_id(author_id)
                     item['author_mkey'] = mkey_value
@@ -81,72 +82,85 @@ class SohuNewsSelfMediaSpider:
         if write_back:
             write_meky_back_to_list(authors_list_path)
 
-    def get_articles_list(self, contents_num="50"):
+    def get_articles_list(self, retry_times=3, contents_num="50"):
         new_list = []
         current_time = int(datetime.now().timestamp())
 
+        # Check if the author list has mkey, if not, add it
         try:
             for item in self.authors_list:
-                if 'author_mkey' not in item:
+                if 'author_mkey' not in item or item['author_mkey'] == 'null' or item['author_mkey'] == 'Null' or item[
+                    'author_mkey'] == None:
                     self.fill_mkey_for_authors_list()
         except Exception as error:
             logging.exception(f'Get mkey error: {error}')
 
-        try:
-            # Check if the author list has mkey, if not, add it
-            for author in self.authors_list:
-                try:
-                    author_id_l = author['author_id']
-                    author_name_l = author['author_name']
-                    author_mkey_l = author['author_mkey']
-                except Exception as error:
-                    logging.exception(f'Cannot find wanted value in authors_list: {error}')
+        for retry in range(retry_times):
+            try:
+                for author in self.authors_list:
+                    try:
+                        author_id_l = author['author_id']
+                        author_name_l = author['author_name']
+                        author_mkey_l = author['author_mkey']
+                    except Exception as error:
+                        logging.exception(f'Cannot find wanted value in authors_list: {error}')
 
-                # The specific value of all the values that are 0 does not matter,
-                # but cannot be deleted, resourceId affects the header of the returned json.
-                self.post_data = json.dumps({
-                    "suv": "0", "pvId": "0", "clientType": 3, "resourceParam":
-                        [{"page": 1, "size": contents_num,
-                          "spm": "0", "resourceId": "10935",
-                          "context": {"pro": "0", "feedType": "0", "mkey": author_mkey_l},
-                          "resProductParam": {"productId": 0, "productType": 0},
-                          "productParam": {"productId": 325, "productType": 13, "categoryId": 0, "mediaId": 0}
-                          }]
-                })
+                    # The specific value of all the values that are 0 does not matter,
+                    # but cannot be deleted, resourceId affects the header of the returned json.
+                    self.post_data = json.dumps({
+                        "suv": "0", "pvId": "0", "clientType": 3, "resourceParam":
+                            [{"page": 1, "size": contents_num,
+                              "spm": "0", "resourceId": "10935",
+                              "context": {"pro": "0", "feedType": "0", "mkey": author_mkey_l},
+                              "resProductParam": {"productId": 0, "productType": 0},
+                              "productParam": {"productId": 325, "productType": 13, "categoryId": 0, "mediaId": 0}
+                              }]
+                    })
 
-                response = requests.post(url="https://cis.sohu.com/cisv4/feeds", headers=self.headers,
-                                         data=self.post_data)
-                if response.status_code == 200:
+                    response = requests.post(url="https://cis.sohu.com/cisv4/feeds", headers=self.headers,
+                                             data=self.post_data)
+                    if response.status_code == 200:
 
-                    raw_json_unescaped = json.loads(response.text)
+                        raw_json_unescaped = json.loads(response.text)
 
-                    # Iterate through the list in the raw JSON data
-                    for key in raw_json_unescaped:
-                        for item in raw_json_unescaped[key]['data']:
-                            title = item['resourceData']['contentData']['title']
-                            # millisecond timestamp
-                            creation_time = item['resourceData']['contentData']['postTime'] / 1000
-                            link = "https://www.sohu.com" + item['resourceData']['contentData']['url']
-                            article_id = item['resourceData']['contentData']['id']
-                            # author_id = item['resourceData']['contentData']['authorId']
+                        # Iterate through the list in the raw JSON data
+                        for key in raw_json_unescaped:
+                            for item in raw_json_unescaped[key]['data']:
+                                title = item['resourceData']['contentData']['title']
+                                # millisecond timestamp
+                                creation_time = item['resourceData']['contentData']['postTime'] / 1000
+                                link = "https://www.sohu.com" + item['resourceData']['contentData']['url']
+                                article_id = item['resourceData']['contentData']['id']
+                                # author_id = item['resourceData']['contentData']['authorId']
 
-                            new_list.append(
-                                {
-                                    "title": title,
-                                    "article_id": str(article_id),
-                                    "author_name": author_name_l,
-                                    "author_id": author_id_l,
-                                    "channel_name": "搜狐新闻",
-                                    "link": link,
-                                    "creation_time": str(int(creation_time)),
-                                    "snapshot_time": str(current_time)
-                                }
-                            )
+                                new_list.append(
+                                    {
+                                        "title": title,
+                                        "article_id": str(article_id),
+                                        "author_name": author_name_l,
+                                        "author_id": author_id_l,
+                                        "channel_name": "搜狐新闻",
+                                        "link": link,
+                                        "creation_time": str(int(creation_time)),
+                                        "snapshot_time": str(current_time)
+                                    }
+                                )
 
-                    self.articles_json = json.dumps(new_list, ensure_ascii=False)
-        except Exception as error:
-            logging.exception(f"Error getting or parsing the response: {error}")
+                        self.articles_json = json.dumps(new_list, ensure_ascii=False)
+                        # break on success
+                        if self.articles_json:
+                            break
+
+
+            except Exception as error:
+                logging.exception(f"Error getting or parsing the response: {error}")
+                self.articles_json = []
+
+        # Make sure self.articles_json = [] after the number of retries is exceeded and still failed
+        if not new_list:
             self.articles_json = []
+            logging.warning(f"Max retries is exceeded in {self}")
+            logging.warning(f"{self} is set to []")
 
     def start(self, authors_list_path=None):
         if authors_list_path is None:
@@ -154,6 +168,7 @@ class SohuNewsSelfMediaSpider:
             authors_list_path = os.path.join(module_dir, '..', 'conf', 'sohonewsselfmedia_authors_list.json')
         self.load_authors(authors_list_path)
         self.get_articles_list()
+
 
 if __name__ == "__main__":
     sh = SohuNewsSelfMediaSpider()

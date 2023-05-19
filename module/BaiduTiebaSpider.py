@@ -3,7 +3,7 @@
 # Function: Bilibili designated authors crawl articles and videos
 # Author: 10935336
 # Creation date: 2023-04-26
-# Modified date: 2023-05-11
+# Modified date: 2023-05-19
 
 import json
 import logging
@@ -31,69 +31,79 @@ class BaiduTiebaSpider:
         except Exception as error:
             logging.exception(f'{authors_list_path} read error: {error}')
 
-    def get_articles_list(self):
+    def get_articles_list(self, retry_times=3):
         new_list = []
         current_time = int(datetime.now().timestamp())
 
-        try:
-            for author in self.authors_list:
-                try:
-                    author_id_l = author['author_id']
-                    author_name_l = author['author_name']
-                except Exception as error:
-                    logging.exception(f'Cannot find wanted value in authors_list: {error}')
+        for retry in range(retry_times):
+            try:
+                for author in self.authors_list:
+                    try:
+                        author_id_l = author['author_id']
+                        author_name_l = author['author_name']
+                    except Exception as error:
+                        logging.exception(f'Cannot find wanted value in authors_list: {error}')
 
-                url = "https://tieba.baidu.com/home/main?" + "id=" + author_id_l
+                    url = "https://tieba.baidu.com/home/main?" + "id=" + author_id_l
 
-                response = requests.get(url=url, headers=self.headers)
+                    response = requests.get(url=url, headers=self.headers)
 
-                if response.status_code == 200:
-                    result = response.content.decode("utf-8")
-                    soup = BeautifulSoup(result, 'html.parser')
+                    if response.status_code == 200:
+                        result = response.content.decode("utf-8")
+                        soup = BeautifulSoup(result, 'html.parser')
 
-                    elements = soup.find_all('div', {'class': 'thread_name'})
+                        elements = soup.find_all('div', {'class': 'thread_name'})
 
-                    for element in elements:
-                        title = element.find('a')['title']
-                        link = "https://tieba.baidu.com" + element.find('a')['href']
-                        bar_name = element.find('a').find_next_sibling('a').text
+                        for element in elements:
+                            title = element.find('a')['title']
+                            link = "https://tieba.baidu.com" + element.find('a')['href']
+                            bar_name = element.find('a').find_next_sibling('a').text
 
-                        article_id_match = re.search(r'/p/(\d+)', link)
-                        if article_id_match:
-                            article_id = article_id_match.group(1)
-                        else:
-                            article_id = None
+                            article_id_match = re.search(r'/p/(\d+)', link)
+                            if article_id_match:
+                                article_id = article_id_match.group(1)
+                            else:
+                                article_id = None
 
-                        post_time_text = soup.find('div', {'class': 'n_post_time'}).text
+                            post_time_text = soup.find('div', {'class': 'n_post_time'}).text
 
-                        # two type of time
-                        try:
-                            post_time = datetime.strptime(post_time_text, '%Y-%m-%d')
-                            creation_time = int(post_time.timestamp())
-                        except ValueError:
-                            post_time = datetime.strptime(post_time_text, '%H:%M').time()
-                            # Date converted to today, not 1900-1-1
-                            post_datetime = datetime.combine(date.today(), post_time)
-                            creation_time = int(post_datetime.timestamp())
+                            # two types of time
+                            try:
+                                post_time = datetime.strptime(post_time_text, '%Y-%m-%d')
+                                creation_time = int(post_time.timestamp())
+                            except ValueError:
+                                post_time = datetime.strptime(post_time_text, '%H:%M').time()
+                                # Date converted to today, not 1900-1-1
+                                post_datetime = datetime.combine(date.today(), post_time)
+                                creation_time = int(post_datetime.timestamp())
 
-                        new_list.append(
-                            {
-                                "title": title,
-                                "article_id": article_id,
-                                "author_name": author_name_l,
-                                "author_id": author_id_l,
-                                "channel_name": "百度贴吧" + '-' + bar_name,
-                                "link": link,
-                                "creation_time": str(creation_time),
-                                "snapshot_time": str(current_time)
-                            }
-                        )
+                            new_list.append(
+                                {
+                                    "title": title,
+                                    "article_id": article_id,
+                                    "author_name": author_name_l,
+                                    "author_id": author_id_l,
+                                    "channel_name": "百度贴吧" + '-' + bar_name,
+                                    "link": link,
+                                    "creation_time": str(creation_time),
+                                    "snapshot_time": str(current_time)
+                                }
+                            )
 
-                    self.articles_json = json.dumps(new_list, ensure_ascii=False)
+                self.articles_json = json.dumps(new_list, ensure_ascii=False)
+                # break on success
+                if self.articles_json:
+                    break
 
-        except Exception as error:
-            logging.exception(f"Error getting or parsing the response: {error}")
+            except Exception as error:
+                logging.exception(f"Error on getting or parsing the response: {error}")
+                self.articles_json = []
+
+        # Make sure self.articles_json = [] after the number of retries is exceeded and still failed
+        if not new_list:
             self.articles_json = []
+            logging.warning(f"Max retries is exceeded in {self}")
+            logging.warning(f"{self} is set to []")
 
     def start(self, authors_list_path=None):
         if authors_list_path is None:
@@ -101,6 +111,7 @@ class BaiduTiebaSpider:
             authors_list_path = os.path.join(module_dir, '..', 'conf', 'baidutieba_authors_list.json')
         self.load_authors(authors_list_path)
         self.get_articles_list()
+
 
 if __name__ == "__main__":
     tb = BaiduTiebaSpider()

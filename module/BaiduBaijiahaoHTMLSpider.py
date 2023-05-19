@@ -5,7 +5,7 @@
 # in some cases, the other may not be able to crawl
 # Author: 10935336
 # Creation date: 2023-05-07
-# Modified date: 2023-05-11
+# Modified date: 2023-05-19
 
 
 import json
@@ -45,68 +45,76 @@ class BaiduBaijiahaoHTMLSpider:
         except Exception as error:
             logging.exception(f'{authors_list_path} read error: {error}')
 
-    def get_articles_list(self):
+    def get_articles_list(self, retry_times=3):
         new_list = []
         current_time = int(datetime.now().timestamp())
 
+        self.driver_init()
 
-        try:
-            self.driver_init()
-            for author in self.authors_list:
-                try:
-                    author_id_l = author['author_id']
-                    author_name_l = author['author_name']
+        for retry in range(retry_times):
+            try:
+                for author in self.authors_list:
+                    try:
+                        author_id_l = author['author_id']
+                        author_name_l = author['author_name']
 
-                except Exception as error:
-                    logging.exception(f'Cannot find wanted value in authors_list: {error}')
+                    except Exception as error:
+                        logging.exception(f'Cannot find wanted value in authors_list: {error}')
 
-                self.driver.implicitly_wait(10)
+                    self.driver.implicitly_wait(10)
 
-                url = "https://author.baidu.com/home/" + str(author_id_l)
+                    url = "https://author.baidu.com/home/" + str(author_id_l)
 
-                self.driver.get(url)
+                    self.driver.get(url)
 
-                # click "文章" button
-                self.driver.find_element(By.XPATH, '//div[text()="文章"]').click()
+                    # click "文章" button
+                    self.driver.find_element(By.XPATH, '//div[text()="文章"]').click()
 
-                # scrool down
-                self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                    # scroll down
+                    self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
 
-                articles_element = self.driver.find_elements(By.CSS_SELECTOR, "div.sfi-article.real-show-log")
+                    articles_element = self.driver.find_elements(By.CSS_SELECTOR, "div.sfi-article.real-show-log")
 
-                for element in articles_element:
-                    creation_time = int(element.get_attribute("created_at"))
+                    for element in articles_element:
+                        creation_time = int(element.get_attribute("created_at"))
 
+                        new_list.append(
+                            {
+                                "title": element.get_attribute("shoubai_c_articleid"),
+                                "article_id": element.get_attribute("title"),
+                                "author_name": author_name_l,
+                                "author_id": author_id_l,
+                                "channel_name": "百度百家号",
+                                "link": element.get_attribute("url"),
+                                "creation_time": str(creation_time),
+                                "snapshot_time": str(current_time)
+                            }
+                        )
 
+                self.articles_json = json.dumps(new_list, ensure_ascii=False)
+                # break on success
+                if self.articles_json:
+                    break
 
-                    new_list.append(
-                        {
-                            "title": element.get_attribute("shoubai_c_articleid"),
-                            "article_id": element.get_attribute("title"),
-                            "author_name": author_name_l,
-                            "author_id": author_id_l,
-                            "channel_name": "百度百家号",
-                            "link": element.get_attribute("url"),
-                            "creation_time": str(creation_time),
-                            "snapshot_time": str(current_time)
-                        }
-                    )
+            except Exception as error:
+                logging.exception(f"Error on getting or parsing the response: {error}")
+                self.articles_json = []
 
-            self.articles_json = json.dumps(new_list, ensure_ascii=False)
-
-        except Exception as error:
-            logging.exception(f"Error getting or parsing the response: {error}")
+        # Make sure self.articles_json = [] after the number of retries is exceeded and still failed
+        if not new_list:
             self.articles_json = []
+            logging.warning(f"Max retries is exceeded in {self}")
+            logging.warning(f"{self} is set to []")
 
         try:
             self.driver.close()
-        except Exception:
+        except:
             pass
 
         try:
             self.driver.quit()
             self.driver.quit()
-        except Exception:
+        except:
             pass
 
     def start(self, authors_list_path=None):
@@ -115,6 +123,7 @@ class BaiduBaijiahaoHTMLSpider:
             authors_list_path = os.path.join(module_dir, '..', 'conf', 'baidubaijiahaohtml_authors_list.json')
         self.load_authors(authors_list_path)
         self.get_articles_list()
+
 
 if __name__ == "__main__":
     bjh = BaiduBaijiahaoHTMLSpider()

@@ -80,7 +80,7 @@ class YoutubeSpider:
         if write_back:
             write_uploads_id_back_to_list(authors_list_path)
 
-    def get_articles_list(self, max_results=20, part='snippet'):
+    def get_articles_list(self, retry_times=3, max_results=20, part='snippet'):
         new_list = []
         current_time = int(datetime.now().timestamp())
 
@@ -90,7 +90,7 @@ class YoutubeSpider:
         except Exception as error:
             logging.exception(f'Cannot find wanted value in api_key_list: {error}')
 
-        # Check if the author list has mkey, if not, add it
+        # Check if the author list has uploads_id, if not, add it
         try:
             for item in self.authors_list:
                 if 'uploads_id' not in item:
@@ -98,53 +98,64 @@ class YoutubeSpider:
         except Exception as error:
             logging.exception(f'Get uploads_id error: {error}')
 
-        try:
-            for author in self.authors_list:
-                try:
-                    author_id_l = author['author_id']
-                    author_name_l = author['author_name']
-                    uploads_id_l = author['uploads_id']
-                except Exception as error:
-                    logging.exception(f'Cannot find wanted value in authors_list: {error}')
+        for retry in range(retry_times):
+            try:
+                for author in self.authors_list:
+                    try:
+                        author_id_l = author['author_id']
+                        author_name_l = author['author_name']
+                        uploads_id_l = author['uploads_id']
+                    except Exception as error:
+                        logging.exception(f'Cannot find wanted value in authors_list: {error}')
 
-                url = "https://www.googleapis.com/youtube/v3/playlistItems?" + \
-                      "playlistId=" + str(uploads_id_l) + \
-                      "&key=" + str(api_key) + \
-                      "&part=" + str(part) + \
-                      "&maxResults=" + str(max_results)
+                    url = "https://www.googleapis.com/youtube/v3/playlistItems?" + \
+                          "playlistId=" + str(uploads_id_l) + \
+                          "&key=" + str(api_key) + \
+                          "&part=" + str(part) + \
+                          "&maxResults=" + str(max_results)
 
-                response = requests.get(url=url, headers=self.headers)
-                if response.status_code == 200:
+                    response = requests.get(url=url, headers=self.headers)
+                    if response.status_code == 200:
 
-                    raw_json_unescaped = json.loads(response.text)
+                        raw_json_unescaped = json.loads(response.text)
 
-                    # Iterate through the list in the raw JSON data
-                    for item in raw_json_unescaped["items"]:
-                        title = item["snippet"]["title"]
-                        video_id = item["snippet"]["resourceId"]["videoId"]
-                        link = "https://www.youtube.com/watch?v=" + video_id
+                        # Iterate through the list in the raw JSON data
+                        for item in raw_json_unescaped["items"]:
+                            title = item["snippet"]["title"]
+                            video_id = item["snippet"]["resourceId"]["videoId"]
+                            link = "https://www.youtube.com/watch?v=" + video_id
 
-                        # time
-                        datetime_obj = datetime.strptime(item["snippet"]["publishedAt"], "%Y-%m-%dT%H:%M:%SZ")
-                        timestamp = int(datetime_obj.timestamp())
+                            # time
+                            datetime_obj = datetime.strptime(item["snippet"]["publishedAt"], "%Y-%m-%dT%H:%M:%SZ")
+                            timestamp = int(datetime_obj.timestamp())
 
-                        new_list.append(
-                            {
-                                "title": title,
-                                "article_id": video_id,
-                                "author_name": author_name_l,
-                                "author_id": author_id_l,
-                                "channel_name": "Youtube",
-                                "link": link,
-                                "creation_time": str(timestamp),
-                                "snapshot_time": str(current_time)
-                            }
-                        )
+                            new_list.append(
+                                {
+                                    "title": title,
+                                    "article_id": video_id,
+                                    "author_name": author_name_l,
+                                    "author_id": author_id_l,
+                                    "channel_name": "Youtube",
+                                    "link": link,
+                                    "creation_time": str(timestamp),
+                                    "snapshot_time": str(current_time)
+                                }
+                            )
 
-                self.articles_json = json.dumps(new_list, ensure_ascii=False)
-        except Exception as error:
-            logging.exception(f"Error getting or parsing the response: {error}")
+                    self.articles_json = json.dumps(new_list, ensure_ascii=False)
+                    # break on success
+                    if self.articles_json:
+                        break
+
+            except Exception as error:
+                logging.exception(f"Error getting or parsing the response: {error}")
+                self.articles_json = []
+
+        # Make sure self.articles_json = [] after the number of retries is exceeded and still failed
+        if not new_list:
             self.articles_json = []
+            logging.warning(f"Max retries is exceeded in {self}")
+            logging.warning(f"{self} is set to []")
 
     def start(self, authors_list_path=None, api_key_path=None):
         if authors_list_path is None:

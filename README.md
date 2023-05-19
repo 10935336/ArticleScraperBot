@@ -77,10 +77,19 @@ Currently supports pushing to:
 <br>
 
 内存使用注意：由于部分站点风控严格，部分站点采用了 Selenium + Firefox 方式，占用内存可达 600MB 或以上。
+
 其他站点一般采用 Requests + Beautiful Soup 4。
 
+<br>
+
 中国大陆用户注意：你需要能链接到 Github 以便让 Selenium Manager 自动下载浏览器驱动。
+
 更多信息请参考 https://www.selenium.dev/blog/2022/introducing-selenium-manager/
+
+如果实在难以下载，可以直接前往 https://github.com/SeleniumHQ/selenium/tree/trunk/common/manager 下载 `selenium-manager`
+
+然后执行以下命令以使用代理提前下载驱动 `./selenium-manager --browser firefox --debug --proxy http://<你的http代理地址>`
+
 
 <br>
 
@@ -89,8 +98,8 @@ Currently supports pushing to:
 | 站点名称                                  | 模块                          |抓取方式                       |
 | ------------------------------------- | ----------------------------- |----------------------------- |
 | 百度百家号            | BaiduBaijiahaoSpider.py       |Selenium + AJAX                |
-|百度百家号            | BaiduBaijiahaoHTMLSpider.py   |Selenium + HTML                |
-|百度贴吧                  | BaiduTiebaSpider.py           |Selenium + HTML                |
+| 百度百家号            | BaiduBaijiahaoHTMLSpider.py   |Selenium + HTML                |
+| 百度贴吧                  | BaiduTiebaSpider.py           |Selenium + HTML                |
 | 哔哩哔哩                     | BilibiliSpider.py             |Requests + AJAX                |
 | 抖音               | DouyinSpider.py              |Selenium + HTML                 |
 | 网易新闻网易号 | NetEaseNewsSelfMediaSpider.py |Requests + HTML                 |

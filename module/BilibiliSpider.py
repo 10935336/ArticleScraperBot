@@ -3,7 +3,7 @@
 # Function: Bilibili designated authors crawl articles and videos
 # Author: 10935336
 # Creation date: 2023-04-23
-# Modified date: 2023-05-19
+# Modified date: 2023-05-20
 
 import json
 import logging
@@ -45,31 +45,38 @@ class BilibiliSpider:
                     except Exception as error:
                         logging.exception(f'Cannot find wanted value in authors_list: {error}')
 
-                    url = "https://api.bilibili.com/x/space/wbi/arc/search?" + "mid=" + author_id_l \
-                          + "&ps=" + contents_num + "&sort=" + sourt_by + '&pn=' + '1' + '&index=' + '1'
+                    url = "https://api.bilibili.com/x/space/wbi/arc/search?" + \
+                          "mid=" + author_id_l + \
+                          "&ps=" + contents_num + \
+                          "&sort=" + sourt_by + \
+                          "&pn=" + "1" + \
+                          '&index=' + "1"
 
                     response = requests.get(url=url, headers=self.headers)
 
-                    # Sometimes you will get -403 in JSON;
-                    # I don't know what happened in the above situation, it's hard to reproduce
-                    max_attempts = 3
-                    attempts = 0
-                    while response.status_code == 200 and json.loads(response.text).get(
-                            'code') == "-403" and attempts < max_attempts:
-                        time.sleep(5)
-                        response = requests.get(url=url, headers=self.headers)
-                        attempts += 1
-                    if attempts == max_attempts:
-                        # Do not add the author to the list, it is easy to cause misjudgment
-                        continue
-
                     if response.status_code == 200:
-
                         raw_json_unescaped = json.loads(response.text)
 
+                        # Bilibili’s risk control has been strengthened, sometimes you will get -403 in JSON;
+                        # retry 5 times
+                        max_attempts = 5
+                        attempts = 0
+                        while raw_json_unescaped['code'] == -403 and attempts < max_attempts:
+                            time.sleep(10)
+
+                            response = requests.get(url=url, headers=self.headers)
+                            raw_json_unescaped = json.loads(response.text)
+                            attempts += 1
+
+                            if raw_json_unescaped['code'] == -403:
+                                time.sleep(15)
+                            elif raw_json_unescaped['code'] == 0:
+                                break
+
+
+
                         # Stupid api design
-                        if raw_json_unescaped['code'] == "-404" or raw_json_unescaped[
-                            'code'] == "404" or not raw_json_unescaped.get('data', {}).get('list', {}).get('vlist'):
+                        if raw_json_unescaped['code'] == -404 or not raw_json_unescaped.get('data', {}).get('list', {}).get('vlist'):
                             # User has no videos
                             new_list.append(
                                 {
@@ -138,26 +145,28 @@ class BilibiliSpider:
 
                     response = requests.get(url=url, headers=self.headers)
 
-                    # Sometimes you will get -403 in JSON;
-                    # I don't know what happened in the above situation, it's hard to reproduce
-                    max_attempts = 3
-                    attempts = 0
-                    while response.status_code == 200 and json.loads(response.text).get(
-                            'code') == "-403" and attempts < max_attempts:
-                        time.sleep(5)
-                        response = requests.get(url=url, headers=self.headers)
-                        attempts += 1
-                    if attempts == max_attempts:
-                        # Do not add the author to the list, it is easy to cause misjudgment
-                        continue
-
                     if response.status_code == 200:
-
                         raw_json_unescaped = json.loads(response.text)
+
+                        # Bilibili’s risk control has been strengthened, sometimes you will get -403 in JSON;
+                        # retry 5 times
+                        max_attempts = 5
+                        attempts = 0
+                        while raw_json_unescaped['code'] == -403 and attempts < max_attempts:
+                            time.sleep(10)
+
+                            response = requests.get(url=url, headers=self.headers)
+                            raw_json_unescaped = json.loads(response.text)
+                            attempts += 1
+
+                            if raw_json_unescaped['code'] == -403:
+                                time.sleep(15)
+                            elif raw_json_unescaped['code'] == 0:
+                                break
 
                         # Stupid api design
                         if raw_json_unescaped['code'] == "-404" or raw_json_unescaped[
-                            'code'] == "404" or not raw_json_unescaped.get('data', {}).get('articles'):
+                            'code'] == -404  or not raw_json_unescaped.get('data', {}).get('articles'):
                             # User has no articles
                             new_list.append(
                                 {

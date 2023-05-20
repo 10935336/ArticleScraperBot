@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Author: 10935336
 # Creation date: 2023-04-20
-# Modified date: 2023-05-19
+# Modified date: 2023-05-20
 
 import importlib
 import site
@@ -127,17 +127,19 @@ def get_new_articles(all_current_articles_lists, previous_articles_file_path='pr
 
                 # If some APIs do not return,
                 # current_article['article_id'] will be recorded as 0, skipped to avoid misjudgment
-                if current_article['article_id'] == 0 or current_article['article_id'] == "0":
-                    continue
+                if current_article['article_id'].isdigit():
+                    if int(current_article['article_id']) == 0:
+                        continue
 
                 # Skip when the difference between creation_time and snapshot_time exceeds the value of time_threshold
                 # and skip time diff judgment for articles with creation_time == 0, further avoid misjudgment
-                if current_article['creation_time'] != 0 or current_article['creation_time'] != "0":
-                    time_diff = int(current_article['snapshot_time']) - int(current_article['creation_time'])
-                    if time_diff > time_threshold:
-                        is_new = False
+                if current_article['creation_time'].isdigit():
+                    if int(current_article['creation_time']) != 0:
+                        time_diff = int(current_article['snapshot_time']) - int(current_article['creation_time'])
+                        if time_diff > time_threshold:
+                            is_new = False
 
-                # Use the article_id field of the article as a unique identifier
+                # Use the article_id field of the article as a unique identifier,
                 # to find whether it exists in the last obtained article list
                 for previous_articles_lists_list in previous_articles_lists:
                     for previous_article in previous_articles_lists_list:
@@ -301,7 +303,7 @@ if __name__ == "__main__":
 
     # push new articles to dingtalk
     logging.info(f'new articles: {new_articles}')
-    push_new_articles_to_dingtalk(new_articles)
+    # push_new_articles_to_dingtalk(new_articles)
 
     # If the current time is around 20 o'clock for 20 minutes
     if time_judgment(target_time_hour=20, time_range=timedelta(minutes=20)):

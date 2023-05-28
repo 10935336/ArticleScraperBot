@@ -96,7 +96,7 @@ Currently supports pushing to:
 
 目前支持以下站点：
 
-| 站点名称       | 模块                          | 抓取方式                | Note                             |
+| 站点名称       | 模块                          | 抓取方式                | 注意事项                             |
 | -------------- | ----------------------------- | ----------------------- | -------------------------------- |
 | 百度百家号     | BaiduBaijiahaoSpider.py       | Selenium + AJAX         | 需要纯净中国大陆家庭 IP          |
 | 百度百家号     | BaiduBaijiahaoHTMLSpider.py   | Selenium + HTML         | 需要纯净中国大陆家庭 IP          |

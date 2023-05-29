@@ -41,7 +41,7 @@ class FacebookHTMLSpider:
         # disable json viewer
         self.options.set_preference("devtools.jsonview.enabled", False)
         # headless mode
-        #self.options.add_argument('-headless')
+        self.options.add_argument('-headless')
         # Driver init
         self.driver = webdriver.Firefox(options=self.options)
 

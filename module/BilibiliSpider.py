@@ -3,25 +3,28 @@
 # Function: Bilibili designated authors crawl articles and videos
 # Author: 10935336
 # Creation date: 2023-04-23
-# Modified date: 2023-05-20
+# Modified date: 2023-05-29
 
 import json
 import logging
 import os
 import time
+import urllib
+import urllib.parse
 from datetime import datetime
+from functools import reduce
+from hashlib import md5
 
 import requests
 
 
 class BilibiliSpider:
-
     def __init__(self):
         self.videos_json = ''
         self.articles_json = ''
         self.authors_list = []
         self.headers = {
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36",
         }
 
     def load_authors(self, authors_list_path):
@@ -30,6 +33,65 @@ class BilibiliSpider:
                 self.authors_list = json.load(r)
         except Exception as error:
             logging.exception(f'{authors_list_path} read error: {error}')
+
+    def get_signed_parameters(self, parameters: dict):
+        """
+        Copy from https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/docs/misc/sign/wbi.md
+        Refer https://github.com/SocialSisterYi/bilibili-API-collect/issues/631#issuecomment-1558747661
+        """
+        mixinKeyEncTab = [
+            46, 47, 18, 2, 53, 8, 23, 32, 15, 50, 10, 31, 58, 3, 45, 35, 27, 43, 5, 49,
+            33, 9, 42, 19, 29, 28, 14, 39, 12, 38, 41, 13, 37, 48, 7, 16, 24, 55, 40,
+            61, 26, 17, 0, 1, 60, 51, 30, 4, 22, 25, 54, 21, 56, 59, 6, 63, 57, 62, 11,
+            36, 20, 34, 44, 52
+        ]
+
+        def getMixinKey(orig: str):
+            '对 imgKey 和 subKey 进行字符顺序打乱编码'
+            return reduce(lambda s, i: s + orig[i], mixinKeyEncTab, '')[:32]
+
+        def encWbi(params: dict, img_key: str, sub_key: str):
+            '为请求参数进行 wbi 签名'
+            mixin_key = getMixinKey(img_key + sub_key)
+            curr_time = round(time.time())
+            params['wts'] = curr_time  # 添加 wts 字段
+            params = dict(sorted(params.items()))  # 按照 key 重排参数
+            # 过滤 value 中的 "!'()*" 字符
+            params = {
+                k: ''.join(filter(lambda chr: chr not in "!'()*", str(v)))
+                for k, v
+                in params.items()
+            }
+            query = urllib.parse.urlencode(params)  # 序列化参数
+            wbi_sign = md5((query + mixin_key).encode()).hexdigest()  # 计算 w_rid
+            params['w_rid'] = wbi_sign
+            return params
+
+        def getWbiKeys():
+            '获取最新的 img_key 和 sub_key'
+            resp = requests.get('https://api.bilibili.com/x/web-interface/nav')
+            resp.raise_for_status()
+            json_content = resp.json()
+            img_url: str = json_content['data']['wbi_img']['img_url']
+            sub_url: str = json_content['data']['wbi_img']['sub_url']
+            img_key = img_url.rsplit('/', 1)[1].split('.')[0]
+            sub_key = sub_url.rsplit('/', 1)[1].split('.')[0]
+            return img_key, sub_key
+
+        def get_query(parameters: dict):
+            """
+            获取签名后的查询参数
+            """
+            img_key, sub_key = getWbiKeys()
+            signed_params = encWbi(
+                params=parameters,
+                img_key=img_key,
+                sub_key=sub_key
+            )
+            query = urllib.parse.urlencode(signed_params)
+            return query
+
+        return get_query(parameters)
 
     def get_videos_list(self, retry_times=3, contents_num="20", sourt_by="publish_time"):
         # Waring contents_num cannot to be too big, or the stupid api will return incomplete json
@@ -45,12 +107,18 @@ class BilibiliSpider:
                     except Exception as error:
                         logging.exception(f'Cannot find wanted value in authors_list: {error}')
 
-                    url = "https://api.bilibili.com/x/space/wbi/arc/search?" + \
-                          "mid=" + author_id_l + \
-                          "&ps=" + contents_num + \
-                          "&sort=" + sourt_by + \
-                          "&pn=" + "1" + \
-                          '&index=' + "1"
+                    raw_parameter = {
+                        "mid": author_id_l,
+                        "ps": contents_num,
+                        "sort": sourt_by,
+                        "pn": 1,
+                        "index": 1
+                    }
+
+                    # anti anti crawl
+                    signed_parameter = self.get_signed_parameters(raw_parameter)
+
+                    url = "https://api.bilibili.com/x/space/wbi/arc/search?" + signed_parameter
 
                     response = requests.get(url=url, headers=self.headers)
 
@@ -62,21 +130,21 @@ class BilibiliSpider:
                         max_attempts = 5
                         attempts = 0
                         while raw_json_unescaped['code'] == -403 and attempts < max_attempts:
-                            time.sleep(10)
+                            time.sleep(5)
 
                             response = requests.get(url=url, headers=self.headers)
                             raw_json_unescaped = json.loads(response.text)
                             attempts += 1
 
                             if raw_json_unescaped['code'] == -403:
-                                time.sleep(15)
+                                time.sleep(10)
                             elif raw_json_unescaped['code'] == 0:
                                 break
 
-
-
                         # Stupid api design
-                        if raw_json_unescaped['code'] == -404 or not raw_json_unescaped.get('data', {}).get('list', {}).get('vlist'):
+                        if raw_json_unescaped['code'] == -404 or not raw_json_unescaped.get('data', {}).get('list',
+                                                                                                            {}).get(
+                            'vlist'):
                             # User has no videos
                             new_list.append(
                                 {
@@ -138,10 +206,16 @@ class BilibiliSpider:
                     except Exception as error:
                         logging.exception(f'Cannot find wanted value in authors_list: {error}')
 
-                    url = "https://api.bilibili.com/x/space/wbi/article?" + \
-                          "mid=" + author_id_l + \
-                          "&ps=" + contents_num + \
-                          "&sort=" + sourt_by
+                    raw_parameter = {
+                        "mid": author_id_l,
+                        "ps": contents_num,
+                        "sort": sourt_by,
+                    }
+
+                    # anti anti crawl
+                    signed_parameter = self.get_signed_parameters(raw_parameter)
+
+                    url = "https://api.bilibili.com/x/space/wbi/article?" + signed_parameter
 
                     response = requests.get(url=url, headers=self.headers)
 
@@ -153,20 +227,20 @@ class BilibiliSpider:
                         max_attempts = 5
                         attempts = 0
                         while raw_json_unescaped['code'] == -403 and attempts < max_attempts:
-                            time.sleep(10)
+                            time.sleep(5)
 
                             response = requests.get(url=url, headers=self.headers)
                             raw_json_unescaped = json.loads(response.text)
                             attempts += 1
 
                             if raw_json_unescaped['code'] == -403:
-                                time.sleep(15)
+                                time.sleep(10)
                             elif raw_json_unescaped['code'] == 0:
                                 break
 
                         # Stupid api design
                         if raw_json_unescaped['code'] == "-404" or raw_json_unescaped[
-                            'code'] == -404  or not raw_json_unescaped.get('data', {}).get('articles'):
+                            'code'] == -404 or not raw_json_unescaped.get('data', {}).get('articles'):
                             # User has no articles
                             new_list.append(
                                 {

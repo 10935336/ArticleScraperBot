@@ -127,13 +127,13 @@ def get_new_articles(all_current_articles_lists, previous_articles_file_path='pr
 
                 # If some APIs do not return,
                 # current_article['article_id'] will be recorded as 0, skipped to avoid misjudgment
-                if current_article['article_id'].isdigit():
+                if current_article['article_id'] is not None and current_article['article_id'].isdigit():
                     if int(current_article['article_id']) == 0:
                         continue
 
                 # Skip when the difference between creation_time and snapshot_time exceeds the value of time_threshold
                 # and skip time diff judgment for articles with creation_time == 0, further avoid misjudgment
-                if current_article['creation_time'].isdigit():
+                if current_article['creation_time'] is not None and current_article['creation_time'].isdigit():
                     if int(current_article['creation_time']) != 0:
                         time_diff = int(current_article['snapshot_time']) - int(current_article['creation_time'])
                         if time_diff > time_threshold:
@@ -163,6 +163,7 @@ def get_new_articles(all_current_articles_lists, previous_articles_file_path='pr
         logging.exception(f'File not found: {error}')
     except Exception as error:
         new_articles = []
+        logging.error(f'{current_article}')
         logging.exception(f'Unexpected error 3: {error}')
 
     return new_articles
@@ -257,18 +258,18 @@ def get_articles_summary(all_current_articles_lists, start_time_threshold=86400,
     return channel_article_count
 
 
-def time_judgment(target_time_hour: int, time_range: timedelta) -> bool:
+def time_judgment(target_time_hour: int, time_range: timedelta, current_time: datetime) -> bool:
     """
     Determine whether the current time is near a certain range, and if so, return True.
     for example,
     time_judgment(target_time=20, time_range=timedelta(minutes=20) returns True if 15 minutes around 20
 
+    :param current_time: class 'datetime.datetime',e.g. datetime.now() 2023-05-21 20:13:42.637117
     :param target_time_hour: Pass in the hour, e.g., 15 is 3pm
-    :param time_range: Pass in the delivery time range in timedelta(), for example, timedelta(minutes=20) is 20 minutes before and after target_time
+    :param time_range: class 'datetime.timedelta' Pass in the delivery time range in timedelta(), for example, timedelta(minutes=20) is 20 minutes before and after target_time
     :return: True or False
     """
 
-    current_time = datetime.now()
     start_time = current_time.replace(hour=target_time_hour, minute=0, second=0, microsecond=0) - time_range
     end_time = current_time.replace(hour=target_time_hour, minute=0, second=0, microsecond=0) + time_range
     return start_time <= current_time <= end_time
@@ -294,6 +295,9 @@ if __name__ == "__main__":
     # log
     setup_logging()
 
+    # Define the current time here to avoid incorrect time due to long processing time
+    current_time = datetime.now()
+
     # get current_articles_lists
     objects_list = spiders_init(load_spiders_list())
     all_current_articles_lists = get_all_current_articles_lists(objects_list)
@@ -305,8 +309,8 @@ if __name__ == "__main__":
     logging.info(f'new articles: {new_articles}')
     # push_new_articles_to_dingtalk(new_articles)
 
-    # If the current time is around 20 o'clock for 20 minutes
-    if time_judgment(target_time_hour=20, time_range=timedelta(minutes=20)):
+    # If the current time is around 20 o'clock for 15 minutes
+    if time_judgment(target_time_hour=20, time_range=timedelta(minutes=15), current_time=current_time):
         # get articles_summary
         articles_summary = get_articles_summary(all_current_articles_lists)
         # push summary to dingtalk

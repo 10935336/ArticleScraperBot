@@ -4,7 +4,7 @@
 # Note: risk control is very strict
 # Author: 10935336
 # Creation date: 2023-04-23
-# Modified date: 2023-05-19
+# Modified date: 2023-06-03
 
 import json
 import logging
@@ -72,7 +72,7 @@ class DouyinSpider:
                     # Close the login popup
                     try:
                         self.driver.find_element(By.CSS_SELECTOR, 'div.dy-account-close').click()
-                    except Exception:
+                    except:
                         pass
 
                     # scroll down
@@ -84,14 +84,14 @@ class DouyinSpider:
                         try:
                             if element.find_element(By.XPATH, './/span[@class="SlSbcMqT cAbnSEfo"]'):
                                 continue
-                        except Exception:
+                        except:
                             pass
 
                         title_element = element.find_element(By.XPATH, './/p[@class="__0w4MvO"]')
                         title = title_element.text
                         link = element.get_attribute('href')
 
-                        article_id_match = re.search(r'/video/(\d+)', link)
+                        article_id_match = re.search(r'/(video|note)/(\d+)', link)
                         if article_id_match:
                             article_id = article_id_match.group(1)
                         else:

@@ -307,7 +307,7 @@ if __name__ == "__main__":
 
     # push new articles to dingtalk
     logging.info(f'new articles: {new_articles}')
-    # push_new_articles_to_dingtalk(new_articles)
+    push_new_articles_to_dingtalk(new_articles)
 
     # If the current time is around 20 o'clock for 15 minutes
     if time_judgment(target_time_hour=20, time_range=timedelta(minutes=15), current_time=current_time):

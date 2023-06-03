@@ -93,7 +93,7 @@ class DouyinSpider:
 
                         article_id_match = re.search(r'/(video|note)/(\d+)', link)
                         if article_id_match:
-                            article_id = article_id_match.group(1)
+                            article_id = article_id_match.group(2)
                         else:
                             article_id = None
 

@@ -2,10 +2,12 @@
 # -*- coding: utf-8 -*-
 # Author: 10935336
 # Creation date: 2023-04-20
-# Modified date: 2023-05-20
+# Modified date: 2023-06-06
 
 import importlib
+import pickle
 import site
+import logging
 from datetime import timedelta
 from os.path import dirname, join, realpath
 
@@ -120,6 +122,11 @@ def get_new_articles(all_current_articles_lists, previous_articles_file_path='pr
             for current_article in current_article_list:
                 is_new = True
 
+                # If the article_id acquisition fails, record an error and skip
+                if current_article['article_id'] is None:
+                    logging.error(f"article_id is null {current_article}")
+                    continue
+
                 # If the author id is new, skip this article,
                 # and effectively avoid misjudgment when the last acquisition fails or the next acquisition fails
                 if current_article['author_id'] not in previous_authors_ids:
@@ -127,7 +134,7 @@ def get_new_articles(all_current_articles_lists, previous_articles_file_path='pr
 
                 # If some APIs do not return,
                 # current_article['article_id'] will be recorded as 0, skipped to avoid misjudgment
-                if current_article['article_id'] is not None and current_article['article_id'].isdigit():
+                if current_article['article_id'].isdigit():
                     if int(current_article['article_id']) == 0:
                         continue
 
@@ -163,15 +170,15 @@ def get_new_articles(all_current_articles_lists, previous_articles_file_path='pr
         logging.exception(f'File not found: {error}')
     except Exception as error:
         new_articles = []
-        logging.error(f'{current_article}')
         logging.exception(f'Unexpected error 3: {error}')
+        logging.error(f'Current article: {current_article}')
 
     return new_articles
 
 
 def get_articles_summary(all_current_articles_lists, start_time_threshold=86400, end_time=None):
     """
-    The time interception range is "end_time - start_time_threshold" to "end_time"
+    The time interception range is "end_time - start_time_threshold" to "end_time",
     For example, if
     start_time_threshold = 86400 (one day),  end_time = 1680086400
     Then the time interception range is 1680000000 to 1680084600
@@ -286,6 +293,72 @@ def setup_logging(log_name='spider.log'):
                         encoding='utf-8')
 
 
+def push_new_articles(new_articles, push_func, current_time, records_expire_days=7,
+                      records_name='article_pushed_records.pkl', ):
+    """
+    Check whether duplicate articles have been pushed within 7 days, and push
+
+    :param new_articles: new_articles
+    :param push_func: push function name
+    """
+    records_dir = os.path.dirname(os.path.abspath(__file__))
+    records_path = os.path.join(records_dir, '.', records_name)
+
+    def load_records(records_path):
+        try:
+            with open(records_path, 'rb') as f:
+                records = pickle.load(f)
+        except FileNotFoundError:
+            records = []
+        return records
+
+    def check_if_pushed(article, current_time):
+        for record in records:
+            if record['article'] == article and current_time - record['push_time'] < timedelta(
+                    days=records_expire_days):
+                # Already pushed
+                return True
+        # Not pushed
+        return False
+
+    def record_push(article, current_time):
+        records.append({
+            'article': article,
+            'push_time': current_time
+        })
+
+    def save_records(records):
+        with open(records_path, 'wb') as f:
+            pickle.dump(records, f)
+
+    def clean_expired_records(records, current_time):
+        # Calculate the difference between the current time and the push time in the record.
+        # If this time difference is less than or equal to records_expire_days days,
+        # it means that this record has not expired, and it will be added to the new list.
+        new_records = [record for record in records if
+                       current_time - record['push_time'] <= timedelta(days=records_expire_days)]
+        save_records(new_records)
+
+    records = load_records(records_path)
+
+    # Determine whether the article has been pushed
+    unpushed_articles = []
+    for article in new_articles:
+        if not check_if_pushed(article, current_time):
+            unpushed_articles.append(article)
+
+    # Push if there are unpushed articles
+    if unpushed_articles:
+        push_func(unpushed_articles)
+
+        # Add pushed articles to the pushed list
+        for article in unpushed_articles:
+            record_push(article, current_time)
+
+    # clean expired records and save new records
+    clean_expired_records(records, current_time)
+
+
 if __name__ == "__main__":
     # Important
     # run this to make it run on absolute paths
@@ -307,7 +380,7 @@ if __name__ == "__main__":
 
     # push new articles to dingtalk
     logging.info(f'new articles: {new_articles}')
-    push_new_articles_to_dingtalk(new_articles)
+    push_new_articles(new_articles=new_articles, push_func=push_new_articles_to_dingtalk, current_time=current_time)
 
     # If the current time is around 20 o'clock for 15 minutes
     if time_judgment(target_time_hour=20, time_range=timedelta(minutes=15), current_time=current_time):

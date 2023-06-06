@@ -8,7 +8,7 @@
 # Otherwise, the obtained creation time will be 0
 # Author: 10935336
 # Creation date: 2023-05-12
-# Modified date: 2023-05-28
+# Modified date: 2023-06-06
 
 
 import json
@@ -22,6 +22,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.firefox.service import Service
 
 
 class FacebookHTMLSpider:
@@ -35,15 +36,15 @@ class FacebookHTMLSpider:
     def driver_init(self):
         # Driver setting
         self.options = Options()
-        # disable automatic notice
+        # Disable automatic notice
         self.options.set_preference("dom.webdriver.enabled", False)
         self.options.set_preference('useAutomationExtension', False)
-        # disable json viewer
+        # Disable json viewer
         self.options.set_preference("devtools.jsonview.enabled", False)
-        # headless mode
+        # Headless mode
         self.options.add_argument('-headless')
         # Driver init
-        self.driver = webdriver.Firefox(options=self.options)
+        self.driver = webdriver.Firefox(options=self.options, service=Service(log_path=os.devnull))
 
     def load_authors(self, authors_list_path):
         try:
@@ -297,7 +298,7 @@ class FacebookHTMLSpider:
                             text = text_div.text
                             clean_text = re.sub(r'http\S+', '', text)
                         else:
-                            clean_text = "The post appears to have no text\n此帖子无文本"
+                            clean_text = "\nThe post appears to have no text\n此帖子无文本"
 
                         time_link_div = post.find("a", {
                             "class": "x1i10hfl xjbqb8w x6umtig x1b1mbwd xaqea5y xav7gou x9f619 x1ypdohk xt0psk2 xe8uvvx xdj266r x11i5rnm xat24cr x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x16tdsg8 x1hl2dhg xggy1nq x1a2a7pz x1heor9g xt0b8zv xo1l8bm"})

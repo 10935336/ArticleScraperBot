@@ -111,3 +111,7 @@ def push_summary_to_dingtalk(articles_summary, dingtalk_bot_conf_path=None):
 
     except Exception as error:
         logging.exception(f'Push to DingTalk error: {error}')
+
+if __name__ == "__main__":
+    new_articles = [{'title': '\nTest message\n测试信息', 'article_id': '1', 'author_name': 'test-test', 'author_id': 'test', 'channel_name': 'Test', 'link': 'https://example.com', 'creation_time': '1685356491', 'snapshot_time': '1685357308'}]
+    push_new_articles_to_dingtalk(new_articles)

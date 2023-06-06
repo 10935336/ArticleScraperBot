@@ -11,7 +11,7 @@
 # So that's it
 # Author: 10935336
 # Creation date: 2023-05-12
-# Modified date: 2023-05-26
+# Modified date: 2023-06-06
 
 
 import json
@@ -24,6 +24,7 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.firefox.service import Service
 
 
 class TwitterHTMLSpider:
@@ -36,15 +37,15 @@ class TwitterHTMLSpider:
     def driver_init(self):
         # Driver setting
         self.options = Options()
-        # disable automatic notice
+        # Disable automatic notice
         self.options.set_preference("dom.webdriver.enabled", False)
         self.options.set_preference('useAutomationExtension', False)
-        # disable json viewer
+        # Disable json viewer
         self.options.set_preference("devtools.jsonview.enabled", False)
-        # headless mode
+        # Headless mode
         self.options.add_argument('-headless')
         # Driver init
-        self.driver = webdriver.Firefox(options=self.options)
+        self.driver = webdriver.Firefox(options=self.options, service=Service(log_path=os.devnull))
 
     def load_authors(self, authors_list_path):
         try:
@@ -94,7 +95,7 @@ class TwitterHTMLSpider:
                             text = text_div.text
                             clean_text = re.sub(r'http\S+', '', text)
                         else:
-                            clean_text = "The post appears to have no text\n此帖子无文本"
+                            clean_text = "\nThe post appears to have no text\n此帖子无文本"
 
 
                         link_a = tweet.find("a", href=lambda x: x and "/status/" in x)

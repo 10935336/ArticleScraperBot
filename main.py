@@ -86,7 +86,6 @@ def get_new_articles(all_current_articles_lists, previous_articles_file_path='pr
 
     :return [{},{}]
     """
-
     if previous_articles_file_path is None:
         module_dir = os.path.dirname(os.path.abspath(__file__))
         previous_articles_file_path = os.path.join(module_dir, '.', 'previous_articles.json')
@@ -276,25 +275,13 @@ def time_judgment(target_time_hour: int, time_range: timedelta, current_time: da
     :param time_range: class 'datetime.timedelta' Pass in the delivery time range in timedelta(), for example, timedelta(minutes=20) is 20 minutes before and after target_time
     :return: True or False
     """
-
     start_time = current_time.replace(hour=target_time_hour, minute=0, second=0, microsecond=0) - time_range
     end_time = current_time.replace(hour=target_time_hour, minute=0, second=0, microsecond=0) + time_range
     return start_time <= current_time <= end_time
 
 
-def setup_logging(log_name='spider.log'):
-    log_format = "%(asctime)s - %(levelname)s - %(message)s"
-    data_format = "%Y/%m/%d %H:%M:%S"
-
-    logdir = os.path.dirname(os.path.abspath(__file__))
-    log_path = os.path.join(logdir, '.', log_name)
-
-    logging.basicConfig(filename=log_path, level=logging.INFO, format=log_format, datefmt=data_format,
-                        encoding='utf-8')
-
-
 def push_new_articles(new_articles, push_func, current_time, records_expire_days=7,
-                      records_name='article_pushed_records.pkl', ):
+                      records_name='article_pushed_records.pkl'):
     """
     Check whether duplicate articles have been pushed within 7 days, and push
 
@@ -312,7 +299,7 @@ def push_new_articles(new_articles, push_func, current_time, records_expire_days
             records = []
         return records
 
-    def check_if_pushed(article, current_time):
+    def check_if_article_is_pushed(article, records, current_time):
         for record in records:
             if record['article'] == article and current_time - record['push_time'] < timedelta(
                     days=records_expire_days):
@@ -321,7 +308,7 @@ def push_new_articles(new_articles, push_func, current_time, records_expire_days
         # Not pushed
         return False
 
-    def record_push(article, current_time):
+    def record_pushed_article(article, records, current_time):
         records.append({
             'article': article,
             'push_time': current_time
@@ -331,7 +318,7 @@ def push_new_articles(new_articles, push_func, current_time, records_expire_days
         with open(records_path, 'wb') as f:
             pickle.dump(records, f)
 
-    def clean_expired_records(records, current_time):
+    def clean_expired_records_and_save(records, current_time):
         # Calculate the difference between the current time and the push time in the record.
         # If this time difference is less than or equal to records_expire_days days,
         # it means that this record has not expired, and it will be added to the new list.
@@ -344,7 +331,7 @@ def push_new_articles(new_articles, push_func, current_time, records_expire_days
     # Determine whether the article has been pushed
     unpushed_articles = []
     for article in new_articles:
-        if not check_if_pushed(article, current_time):
+        if not check_if_article_is_pushed(article, records, current_time):
             unpushed_articles.append(article)
 
     # Push if there are unpushed articles
@@ -353,10 +340,21 @@ def push_new_articles(new_articles, push_func, current_time, records_expire_days
 
         # Add pushed articles to the pushed list
         for article in unpushed_articles:
-            record_push(article, current_time)
+            record_pushed_article(article, records, current_time)
 
     # clean expired records and save new records
-    clean_expired_records(records, current_time)
+    clean_expired_records_and_save(records, current_time)
+
+
+def setup_logging(log_name='spider.log'):
+    log_format = "%(asctime)s - %(levelname)s - %(message)s"
+    data_format = "%Y/%m/%d %H:%M:%S"
+
+    logdir = os.path.dirname(os.path.abspath(__file__))
+    log_path = os.path.join(logdir, '.', log_name)
+
+    logging.basicConfig(filename=log_path, level=logging.INFO, format=log_format, datefmt=data_format,
+                        encoding='utf-8')
 
 
 if __name__ == "__main__":

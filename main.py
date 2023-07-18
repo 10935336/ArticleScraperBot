@@ -9,6 +9,7 @@ import pickle
 import site
 import logging
 from datetime import timedelta
+from logging.handlers import RotatingFileHandler
 from os.path import dirname, join, realpath
 
 # Change to dynamic loading in the future
@@ -346,14 +347,18 @@ def push_new_articles(new_articles, push_func, current_time, records_expire_days
     clean_expired_records_and_save(records, current_time)
 
 
-def setup_logging(log_name='spider.log'):
+def setup_logging(log_name='spider.log', max_bytes=10485760, backup_count=3):
+    # maximum size of the log file 10MB (10*1024*1024=10485760)
+    # maximum backup_count 3
+
     log_format = "%(asctime)s - %(levelname)s - %(message)s"
     data_format = "%Y/%m/%d %H:%M:%S"
 
     logdir = os.path.dirname(os.path.abspath(__file__))
-    log_path = os.path.join(logdir, '.', log_name)
+    log_path = os.path.join(logdir, log_name)
 
-    logging.basicConfig(filename=log_path, level=logging.INFO, format=log_format, datefmt=data_format,
+    logging.basicConfig(handlers=[RotatingFileHandler(log_path, maxBytes=max_bytes, backupCount=backup_count)],
+                        level=logging.INFO, format=log_format, datefmt=data_format,
                         encoding='utf-8')
 
 

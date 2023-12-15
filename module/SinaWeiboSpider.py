@@ -6,7 +6,7 @@
 # m.weibo.com has almost no authentication, but weibo.com is very strict.
 # Author: 10935336
 # Creation date: 2023-04-24
-# Modified date: 2023-05-19
+# Modified date: 2023-12-15
 
 import json
 import logging
@@ -85,10 +85,10 @@ class SinaWeiboSpider:
                                 }
                             )
 
-                    self.articles_json = json.dumps(new_list, ensure_ascii=False)
-                    # break on success
-                    if self.articles_json:
-                        break
+                self.articles_json = json.dumps(new_list, ensure_ascii=False)
+                # break on success
+                if self.articles_json:
+                    break
 
             except Exception as error:
                 logging.exception(f"Error getting or parsing the response: {error}")

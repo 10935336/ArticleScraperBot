@@ -4,7 +4,7 @@
 # Note: risk control is very strict
 # Author: 10935336
 # Creation date: 2023-04-23
-# Modified date: 2023-06-06
+# Modified date: 2024-01-07
 
 import json
 import logging
@@ -35,7 +35,7 @@ class DouyinSpider:
         # Disable json viewer
         self.options.set_preference("devtools.jsonview.enabled", False)
         # Headless mode
-        self.options.add_argument('-headless')
+        #self.options.add_argument('-headless')
         # Driver init
         self.driver = webdriver.Firefox(options=self.options, service=Service(log_path=os.devnull))
 
@@ -76,21 +76,32 @@ class DouyinSpider:
                     except:
                         pass
 
+                    time.sleep(1)
+
                     # scroll down
                     self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
 
-                    elements = self.driver.find_elements(By.XPATH, '//a[@class="B3AsdZT9 chmb2GX8"]')
+                    # Class names are obfuscated and may change frequently, so you may need to update them yourself
+                    # Look for it in the <li> tag of the video list
+                    # <a href="/video/715" class="hY8lWHgA SF0P5HVG h0CXDpkg" target="_blank" rel="noopener noreferrer">
+                    # <p class="Ja95nb2Z">Video title</p>
+                    # <div class="JjBQw78F user-video-tag">
+
+                    elements = self.driver.find_elements(By.XPATH, '//a[@class="hY8lWHgA SF0P5HVG h0CXDpkg"]')
+                    print(f'elements:{elements}')
                     for element in elements:
-                        # Skip top pinning
+                        # Skip top pinning videos
                         try:
-                            if element.find_element(By.XPATH, './/span[@class="SlSbcMqT cAbnSEfo"]'):
+                            if element.find_element(By.XPATH, './/div[@class="JjBQw78F user-video-tag"]'):
                                 continue
                         except:
                             pass
 
-                        title_element = element.find_element(By.XPATH, './/p[@class="__0w4MvO"]')
+                        title_element = element.find_element(By.XPATH, './/p[@class="Ja95nb2Z"]')
                         title = title_element.text
+                        print(f'title:{title}')
                         link = element.get_attribute('href')
+                        print(f'link:{link}')
 
                         article_id_match = re.search(r'/(video|note)/(\d+)', link)
                         if article_id_match:
@@ -106,6 +117,7 @@ class DouyinSpider:
                                 "author_id": author_id_l,
                                 "channel_name": "抖音",
                                 "link": link,
+                                # no creation_time info
                                 "creation_time": "0",
                                 "snapshot_time": str(current_time)
                             }

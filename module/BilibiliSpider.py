@@ -133,8 +133,6 @@ class BilibiliSpider:
 
                     response = requests.get(url=url, headers=self.headers, cookies=self.cookies)
 
-                    print(response.json())
-
                     if response.status_code == 200:
                         raw_json_unescaped = json.loads(response.text)
 

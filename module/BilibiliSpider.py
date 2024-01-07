@@ -3,7 +3,7 @@
 # Function: Bilibili designated authors crawl articles and videos
 # Author: 10935336
 # Creation date: 2023-04-23
-# Modified date: 2023-05-29
+# Modified date: 2024-01-07
 
 import json
 import logging
@@ -23,7 +23,14 @@ class BilibiliSpider:
         self.articles_json = ''
         self.authors_list = []
         self.headers = {
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36",
+            # If this UA is used, the request will succeed regardless of the parameters, or you need cookies
+            # "user-agent": "Mozilla/5.0",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "accept-language": "en,zh-CN;q=0.9,zh;q=0.8",
+        }
+        # Only non-logged-in cookies are required，and seems to be any value
+        self.cookies = {
+            "buvid3": "61C3B53E-D899-8013-46F5-91C147036F8A04396infoc",
         }
 
     def load_authors(self, authors_list_path):
@@ -68,7 +75,7 @@ class BilibiliSpider:
 
         def getWbiKeys():
             '获取最新的 img_key 和 sub_key'
-            resp = requests.get('https://api.bilibili.com/x/web-interface/nav')
+            resp = requests.get('https://api.bilibili.com/x/web-interface/nav', headers=self.headers)
             resp.raise_for_status()
             json_content = resp.json()
             img_url: str = json_content['data']['wbi_img']['img_url']
@@ -111,15 +118,22 @@ class BilibiliSpider:
                         "ps": contents_num,
                         "sort": sourt_by,
                         "pn": 1,
-                        "index": 1
+                        "index": 1,
+                        # The dm_ parameter is your WebGL parameter, which can be a fixed value and can be obtained directly from your browser request
+                        # Thanks to https://github.com/SocialSisterYi/bilibili-API-collect/issues/868
+                        "dm_cover_img_str": "QU5HTEUgKE5WSURJQSwgTlZJRElBIEdlRm9yY2UgUlRYIDQwNjAgKDB4MDAwMDI4ODIpIERpcmVjdDNEMTEgdnNfNV8wIHBzXzVfMCwgRDNEMTEpR29vZ2xlIEluYy4gKE5WSURJQS",
+                        "dm_img_str": "V2ViR0wgMS4wIChPcGVuR0wgRVMgMi4wIENocm9taXVtKQ",
+                        "dm_img_list": "[]"
                     }
 
-                    # anti anti crawl
+                    # anti crawl WBI sign
                     signed_parameter = self.get_signed_parameters(raw_parameter)
 
                     url = "https://api.bilibili.com/x/space/wbi/arc/search?" + signed_parameter
 
-                    response = requests.get(url=url, headers=self.headers)
+                    response = requests.get(url=url, headers=self.headers, cookies=self.cookies)
+
+                    print(response.json())
 
                     if response.status_code == 200:
                         raw_json_unescaped = json.loads(response.text)
@@ -211,7 +225,7 @@ class BilibiliSpider:
                         "sort": sourt_by,
                     }
 
-                    # anti anti crawl
+                    # anti crawl WBI sign
                     signed_parameter = self.get_signed_parameters(raw_parameter)
 
                     url = "https://api.bilibili.com/x/space/wbi/article?" + signed_parameter
@@ -290,8 +304,9 @@ class BilibiliSpider:
 
     def combine_video_and_articles(self):
         try:
-            self.articles_json = json.dumps(json.loads(self.articles_json) + json.loads(self.videos_json),
-                                            ensure_ascii=False)
+            if self.articles_json and self.videos_json:
+                self.articles_json = json.dumps(json.loads(self.articles_json) + json.loads(self.videos_json),
+                                                ensure_ascii=False)
         except Exception as error:
             logging.exception(f"Error in combine video and articles list: {error}")
             self.articles_json = []

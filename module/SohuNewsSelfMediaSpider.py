@@ -3,7 +3,7 @@
 # Function: Sohu self-media designated authors crawl articles
 # Author: 10935336
 # Creation date: 2023-04-22
-# Modified date: 2023-05-19
+# Modified date: 2024-01-24
 
 import json
 import logging
@@ -82,7 +82,7 @@ class SohuNewsSelfMediaSpider:
         if write_back:
             write_meky_back_to_list(authors_list_path)
 
-    def get_articles_list(self, retry_times=3, contents_num="50"):
+    def get_articles_list(self, retry_times=3, contents_num=20):
         new_list = []
         current_time = int(datetime.now().timestamp())
 
@@ -108,17 +108,19 @@ class SohuNewsSelfMediaSpider:
                     # The specific value of all the values that are 0 does not matter,
                     # but cannot be deleted, resourceId affects the header of the returned json.
                     self.post_data = json.dumps({
-                        "suv": "0", "pvId": "0", "clientType": 3, "resourceParam":
-                            [{"page": 1, "size": contents_num,
-                              "spm": "0", "resourceId": "10935",
-                              "context": {"pro": "0", "feedType": "0", "mkey": author_mkey_l},
-                              "resProductParam": {"productId": 0, "productType": 0},
-                              "productParam": {"productId": 325, "productType": 13, "categoryId": 0, "mediaId": 0}
-                              }]
+                        'suv': '0', 'pvId': '0', 'clientType': 3, 'resourceParam': [
+                            {'requestId': '0', 'resourceId': '10935', 'page': 1, 'size': contents_num, 'spm': '0',
+                             'context': {'pro': '0,1,3,4,5', 'feedType': '0', 'mkey': author_mkey_l, },
+                             'resProductParam': {'productId': 324, 'productType': 13, },
+                             'productParam': {'productId': 325, 'productType': 13, 'categoryId': 47, 'mediaId': 1, },
+                             'expParam': {}, }, ],
                     })
 
                     response = requests.post(url="https://cis.sohu.com/cisv4/feeds", headers=self.headers,
                                              data=self.post_data)
+
+                    print(response.json())
+
                     if response.status_code == 200:
 
                         raw_json_unescaped = json.loads(response.text)
@@ -146,10 +148,10 @@ class SohuNewsSelfMediaSpider:
                                     }
                                 )
 
-                        self.articles_json = json.dumps(new_list, ensure_ascii=False)
-                        # break on success
-                        if self.articles_json:
-                            break
+                self.articles_json = json.dumps(new_list, ensure_ascii=False)
+                # break on success
+                if self.articles_json:
+                    break
 
 
             except Exception as error:

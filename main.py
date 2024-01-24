@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Author: 10935336
 # Creation date: 2023-04-20
-# Modified date: 2023-06-06
+# Modified date: 2024-01-24
 
 import importlib
 import pickle
@@ -58,7 +58,7 @@ def spiders_init(spiders_list):
 
         return objects_list
     except Exception as error:
-        logging.exception(f'Unexpected error 1: {error}')
+        logging.exception(f'Unexpected error in spiders_init(): {error}')
 
 
 def get_all_current_articles_lists(objects_list):
@@ -70,7 +70,7 @@ def get_all_current_articles_lists(objects_list):
             if object_.articles_json:
                 all_list.append(json.loads(object_.articles_json))
     except Exception as error:
-        logging.exception(f'Unexpected error 2: {error}')
+        logging.exception(f'Unexpected error in get_all_current_articles_lists(): {error}')
 
     return json.dumps(all_list, ensure_ascii=False)
 
@@ -146,11 +146,12 @@ def get_new_articles(all_current_articles_lists, previous_articles_file_path='pr
                         if time_diff > time_threshold:
                             is_new = False
 
-                # Use the article_id field of the article as a unique identifier,
+                # Use the article_id and author_id field of the article as a unique identifier,
                 # to find whether it exists in the last obtained article list
                 for previous_articles_lists_list in previous_articles_lists:
                     for previous_article in previous_articles_lists_list:
-                        if current_article['article_id'] == previous_article['article_id']:
+                        if current_article['article_id'] == previous_article['article_id'] and current_article[
+                            'author_id'] == previous_article['author_id']:
                             is_new = False
                             break
                     if not is_new:
@@ -170,7 +171,7 @@ def get_new_articles(all_current_articles_lists, previous_articles_file_path='pr
         logging.exception(f'File not found: {error}')
     except Exception as error:
         new_articles = []
-        logging.exception(f'Unexpected error 3: {error}')
+        logging.exception(f'Unexpected error in get_new_articles(): {error}')
         logging.error(f'Current article: {current_article}')
 
     return new_articles
@@ -260,7 +261,7 @@ def get_articles_summary(all_current_articles_lists, start_time_threshold=86400,
         channel_article_count['time'] = {'start_time': start_time, 'end_time': end_time}
 
     except Exception as error:
-        logging.exception(f'Unexpected error 4: {error}')
+        logging.exception(f'Unexpected error in get_articles_summary(): {error}')
 
     return channel_article_count
 
@@ -360,7 +361,6 @@ def setup_logging(log_name='spider.log', max_bytes=10485760, backup_count=3):
     logging.basicConfig(handlers=[RotatingFileHandler(log_path, maxBytes=max_bytes, backupCount=backup_count)],
                         level=logging.INFO, format=log_format, datefmt=data_format,
                         encoding='utf-8')
-
 
 if __name__ == "__main__":
     # Important

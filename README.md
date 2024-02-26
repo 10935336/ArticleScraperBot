@@ -235,10 +235,10 @@ team_name 是从 author_name 中提取的。
 
 在 `module` 文件夹内创建你的模块，在模块内创建和文件名同名的类。
 
-- 实现从 `conf/<小写模块名称，去掉spider>_authors_list.json` 读取作者 ID 和名字。
+- 实现从 `conf/<小写模块名称，去掉spider>_authors_list.json` 读取作者 ID 和名字（其他值也行，名称标准化考虑）。
 
 - 实现执行 `self.start()` 后可以在 `self.articles_json` 内读取到
-  以 `self.articles_json = json.dumps(foobar, ensure_ascii=False)` 储存的文章列表，所有字段均为 `str`，格式如下：
+  以 `self.articles_json = json.dumps(foobar, ensure_ascii=False)` 储存的文章列表，其中时间戳为 int 时间戳，所有字段均为 `str`，格式如下：
 
 ```
 [
@@ -264,6 +264,10 @@ team_name 是从 author_name 中提取的。
     }
 ]
 ```
+如果执行失败，则需要返回空列表 []。
+
+主程序会读取 spider_list.json 然后从 spider_id 字段读取相应文件名/类名，然后导入类，实例化后执行 object_name.start() 然后从 object_name.articles_json 获取文章列表。
+
 
 <br>
 

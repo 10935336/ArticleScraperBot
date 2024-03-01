@@ -1,8 +1,15 @@
 [English](#english) | [简体中文](#%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87)
 
 <br>
+<br>
 
 # English
+
+Only the main program is provided. The function of the main program is only to aggregate the information returned by each module. It does not include any crawling function. Please implement the specific crawling module yourself.
+
+This program is an open source program, and users assume the risks of using it. The author is not responsible for any legal disputes or losses caused by using this program.
+
+The sample Youtube module is crawled using the officially provided API.
 
 ## Introduce
 
@@ -18,19 +25,7 @@ The following sites are currently supported:
 
 | Name                                  | Module                        | Crawl method            | Note                                           |
 | ------------------------------------- | ----------------------------- | ----------------------- | ---------------------------------------------- |
-| Baidu Baijiahao 百度百家号            | BaiduBaijiahaoSpider.py       | Selenium + AJAX         | Need pure mainland China home IP               |
-| Baidu Baijiahao 百度百家号            | BaiduBaijiahaoHTMLSpider.py   | Selenium + HTML         | Need pure mainland China home IP               |
-| Baidu Tieba 百度贴吧                  | BaiduTiebaSpider.py           | Selenium + HTML         | Need pure mainland China home IP               |
-| Bilibili 哔哩哔哩                     | BilibiliSpider.py             | Requests + AJAX         |                                                |
-| Douyin(not tiktok) 抖音               | DouyinSpider.py               | Selenium + HTML         |                                                |
-| NetEase News SelfMedia 网易新闻网易号 | NetEaseNewsSelfMediaSpider.py | Requests + HTML         |                                                |
-| Sina Weibo 新浪微博                   | SinaWeiboSpider.py            | Requests + AJAX         |                                                |
-| Sohu News SelfMedia 搜狐新闻搜狐号    | SohuNewsSelfMediaSpider.py    | Requests + AJAX         |                                                |
-| Tencent News SelfMedia 腾讯新闻企鹅号 | TencentNewsSelfMediaSpider.py | Requests + AJAX         |                                                |
 | Youtube                               | YoutubeSpider.py              | Requests + Official API | Need to apply for YouTube Data API v3          |
-| Twitter                               | TwitterHTMLSpider.py          | Selenium + HTML         |                                                |
-| Facebook                              | FacebookHTMLSpider.py         | Selenium + HTML         |                                                |
-| Medium                                | MediumSpider.py               | Requests + HTML         | Need to provide account and password to log in |
 
 <br>
 
@@ -51,17 +46,57 @@ Currently supports pushing to:
 - Open the `conf` folder;
 
 - Find the author list of the website you want to crawl, the author list file is named in this way `<lowercase module name, remove spider>_authors_list.json`
-  For example, the author list of `BilibiliSpider.py` is `bilibili_authors_list.json`;
+  For example, the author list of `YoutubeSpider.py` is `youtube_authors_list.json`;
 
 - Fill in the author name and ID in the author list according to the sample format, the number is not limited;
 
 - Fill in `spider_list.json` This is the list of websites you want to crawl.
-  For example, if you want to crawl bilibili, fill in the module name of bilibili `BilibiliSpider` in `spider_id`, `object_name` can be filled in freely, but cannot be repeated;
+  For example, if you want to crawl Youtube, fill in the module name of youtube `YoutubeSpider` in `spider_id`, `object_name` can be filled in freely, but cannot be repeated;
 
 - Fill in the push key.
   For example, DingTalk needs to fill in `webhook`, `secret` and `name` in `dingtalk_bot_key.json`;
 
 - Depending on how often you want to get the latest articles, schedule `python3 main.py` with an external timer such as crontab or Windows Task Scheduler;
+
+
+## Website module extension method
+
+Create your module in the `module` folder and create a class within the module with the same name as the file name.
+
+- Implement reading of author ID and name from `conf/<lowercase module name, remove spider>_authors_list.json` (other values are also acceptable, name standardization is considered).
+
+- The implementation can be read in `self.articles_json` after executing `self.start()`
+   A list of articles stored with `self.articles_json = json.dumps(foobar, ensure_ascii=False)`, where the timestamp is an int timestamp, and all fields are `str`. The format is as follows:
+
+```
+[
+     {
+         "title": "title",
+         "article_id": "Article ID",
+         "author_name": "author name",
+         "author_id": "authorID",
+         "channel_name": "website name",
+         "link": "link",
+         "creation_time": "Creation timestamp",
+         "snapshot_time": "Crawling timestamp"
+     },
+     {
+         "title": "title",
+         "article_id": "Article ID",
+         "author_name": "author name",
+         "author_id": "authorID",
+         "channel_name": "website name",
+         "link": "link",
+         "creation_time": "Creation timestamp",
+         "snapshot_time": "Crawling timestamp"
+     }
+]
+```
+If execution fails, an empty list [] needs to be returned.
+
+The main program will read spider_list.json and then read the corresponding file name/class name from the spider_id field, then import the class, execute object_name.start() after instantiation, and then obtain the article list from object_name.articles_json.
+
+
 
 <br>
 <br>
@@ -70,6 +105,13 @@ Currently supports pushing to:
 
 # 简体中文
 
+仅提供主程序，主程序功能仅仅是聚合各个模块返回的信息，不包含任何爬取功能，具体爬取模块请自行实现。
+
+本程序为开源程序，使用者自行承担使用风险。作者对因使用本程序造成的任何法律纠纷或损失概不负责。
+
+示例 Youtube 模块使用官方提供的 API 爬取。
+
+
 ## 介绍
 
 这是一个可以同时从多个网站多位作者获取最新更新的文章并通过多个机器人推送到聊天的软件。相当于订阅作者的动态。
@@ -77,40 +119,13 @@ Currently supports pushing to:
 采用模块化设计，所以你可以自行增加站点或推送。
 
 <br>
-
-内存使用注意：由于部分站点风控严格，部分站点采用了 Selenium + Firefox 方式，占用内存可达 600MB 或以上。
-
-其他站点一般采用 Requests + Beautiful Soup 4。
-
-<br>
-
-中国大陆用户注意：你需要能链接到 Github 以便让 Selenium Manager 自动下载浏览器驱动。
-
-更多信息请参考 https://www.selenium.dev/blog/2022/introducing-selenium-manager/
-
-如果实在难以下载，可以直接前往 https://github.com/SeleniumHQ/selenium/tree/trunk/common/manager 下载 `selenium-manager`
-
-然后执行以下命令以使用代理提前下载驱动 `./selenium-manager --browser firefox --debug --proxy http://<你的http代理地址>`
-
 <br>
 
 目前支持以下站点：
 
 | 站点名称       | 模块                          | 抓取方式                | 注意事项                             |
 | -------------- | ----------------------------- | ----------------------- | -------------------------------- |
-| 百度百家号     | BaiduBaijiahaoSpider.py       | Selenium + AJAX         | 需要纯净中国大陆家庭 IP          |
-| 百度百家号     | BaiduBaijiahaoHTMLSpider.py   | Selenium + HTML         | 需要纯净中国大陆家庭 IP          |
-| 百度贴吧       | BaiduTiebaSpider.py           | Selenium + HTML         | 需要纯净中国大陆家庭 IP          |
-| 哔哩哔哩       | BilibiliSpider.py             | Requests + AJAX         |                                  |
-| 抖音           | DouyinSpider.py               | Selenium + HTML         |                                  |
-| 网易新闻网易号 | NetEaseNewsSelfMediaSpider.py | Requests + HTML         |                                  |
-| 新浪微博       | SinaWeiboSpider.py            | Requests + AJAX         |                                  |
-| 搜狐新闻搜狐号 | SohuNewsSelfMediaSpider.py    | Requests + AJAX         |                                  |
-| 腾讯新闻企鹅号 | TencentNewsSelfMediaSpider.py | Requests + AJAX         |                                  |
 | Youtube        | YoutubeSpider.py              | Requests + Official API | 需要申请官方 YouTube Data API v3 |
-| Twitter        | TwitterHTMLSpider.py          | Selenium + HTML         |                                  |
-| Facebook       | FacebookHTMLSpider.py         | Selenium + HTML         |                                  |
-| Medium         | MediumSpider.py               | Requests + HTML         | 需要提供账号密码登录             |
 
 <br>
 
@@ -131,12 +146,12 @@ Currently supports pushing to:
 - 打开 `conf` 文件夹；
 
 - 找到你想抓取的网站的作者列表 ，作者列表文件按此方式命名 `<小写模块名称，去掉spider>_authors_list.json`
-  例如 `BilibiliSpider.py` 的作者列表为 `bilibili_authors_list.json`；
+  例如 `YoutubeSpider.py` 的作者列表为 `youtube_authors_list.json`；
 
 - 在作者列表中按示例格式填入作者名称和 ID，个数不限；
 
 - 填写 `spider_list.json` 这是你要爬取的网站列表。
-  例如如果你想要爬取 bilibili 就在`spider_id`中填写 bilibili 的模块名称`BilibiliSpider`，`object_name`可以随意填写，但不能重复；
+  例如如果你想要爬取 Youtube 就在`spider_id`中填写 Youtube 的模块名称`YoutubeSpider`，`object_name`可以随意填写，但不能重复；
 
 - 填写推送密钥。
   例如钉钉需要在 `dingtalk_bot_key.json` 中填入`webhook`和`secret`和`name`；
@@ -277,89 +292,6 @@ team_name 是从 author_name 中提取的。
 
 <br>
 
-## 使用例子
-
-假如我想爬取哔哩哔哩用户“陈睿”和新浪微博用户“新浪科技”和“新浪新闻”的文章并推送到钉钉。
-
-#### 哔哩哔哩
-
-首先通过搜索等方式打开作者主页：
-
-```
-https://space.bilibili.com/208259?spm_id_from=333.337.0.0
-```
-
-其中 `208259` 为用户 ID
-
-<br>
-
-然后打开 `bilibili_authors_list.json` 填入:
-
-```
-[
-  {
-    "author_id": "208259",
-    "author_name": "陈睿-自定义名称"
-  }
-]
-```
-
-<br>
-
-#### 新浪微博
-
-首先通过搜索等方式打开作者主页：
-
-新浪科技：
-
-```
-https://m.weibo.cn/u/1642634100?uid=1642634100&t=&luicode=10000011&lfid=100103type%3D3%26q%3D%E6%96%B0%E6%B5%AA%26t%3D
-```
-
-其中 `1642634100` 为用户 ID。
-
-<br>
-
-新浪新闻：
-
-如果用户有自定义主页，如 `新浪新闻` 的主页是 `https://weibo.com/sinapapers` ，
-
-此时打开浏览器控制台，切换为手机模式，刷新页面得到`https://m.weibo.cn/u/2028810631`，2028810631 即为用户 ID。
-
-<br>
-
-然后打开 `sinaweibo_authors_list.json` 填入:
-
-```
-[
-  {
-    "author_id": "1642634100",
-    "author_name": "新浪科技"
-  }，
-  {
-    "author_id": "2028810631",
-    "author_name": "新浪新闻"
-  }
-]
-```
-
-#### 爬取站点
-
-打开 `spider_list.json` 填入
-
-```
-[
-  {
-    "spider_id": "BilibiliSpider",
-    "object_name": "bb"
-  },
-  {
-    "spider_id": "SinaWeiboSpider",
-    "object_name": "wb"
-  }
-]
-```
-
 #### 钉钉推送
 
 参考官方文档 https://open.dingtalk.com/document/robots/custom-robot-access
@@ -395,14 +327,6 @@ https://m.weibo.cn/u/1642634100?uid=1642634100&t=&luicode=10000011&lfid=100103ty
 注意，此文件必须以换行符结尾，不要删掉最后的空行。
 
 ## 网站注意事项
-
-#### 新浪微博
-
-###### 获取用户 ID
-
-如果用户有自定义主页，如 `新浪新闻` 的主页是 `https://weibo.com/sinapapers` ，
-
-此时打开浏览器控制台，切换为手机模式，刷新页面得到`https://m.weibo.cn/u/2028810631`，2028810631 即为用户 ID。
 
 #### Youtube
 

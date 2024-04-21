@@ -5,7 +5,7 @@
 
 # English
 
-Only the main program is provided. The function of the main program is only to aggregate the information returned by each module. It does not include any crawling function. Please implement the specific crawling module yourself.
+Due to legal risks, the crawling module has been removed. Only the main program is provided. The function of the main program is only to aggregate the information returned by each module. It does not include any crawling function. Please implement the specific crawling module yourself.
 
 This program is an open source program, and users assume the risks of using it. The author is not responsible for any legal disputes or losses caused by using this program.
 
@@ -105,7 +105,7 @@ The main program will read spider_list.json and then read the corresponding file
 
 # 简体中文
 
-仅提供主程序，主程序功能仅仅是聚合各个模块返回的信息，不包含任何爬取功能，具体爬取模块请自行实现。
+因法律风险，爬取模块已移除。仅提供主程序，主程序功能仅仅是聚合各个模块返回的信息，不包含任何爬取功能，具体爬取模块请自行实现。
 
 本程序为开源程序，使用者自行承担使用风险。作者对因使用本程序造成的任何法律纠纷或损失概不负责。
 
